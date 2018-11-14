@@ -1,4 +1,4 @@
-# MM-control-01
+# MM-control-01 - port for Arduino Mega + Ramps
 MMU 3-axis stepper control
 
 ## Table of contents
