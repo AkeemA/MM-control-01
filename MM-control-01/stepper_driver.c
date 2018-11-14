@@ -1,4 +1,5 @@
 #include "stepper_driver.h"
+#include "main.h"
 #include <avr/io.h>
 
 

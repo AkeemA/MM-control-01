@@ -2,7 +2,6 @@
 
 
 #include "main.h"
-#include <Arduino.h>
 #include <stdio.h>
 #include <string.h>
 #include <avr/io.h>
@@ -90,7 +89,7 @@ void setup()
 	led_blink(4);
 
     pinMode(findaPin, INPUT);                        // pinda Filament sensor
-    pinMode(filamentSwitch, INPUT);
+    //pinMode(filamentSwitch, INPUT);
 
     driver_init();
 	shr16_set_led(0x000);

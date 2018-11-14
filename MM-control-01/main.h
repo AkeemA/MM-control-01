@@ -4,6 +4,11 @@
 
 #include <inttypes.h>
 #include "config.h"
+#include <Arduino.h>
+//GENERAL
+#define ENABLE LOW                // stepper motor enable is active low
+#define DISABLE HIGH              // stepper motor disable is active high
+
 
 void manual_extruder_selector();
 

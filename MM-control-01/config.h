@@ -6,24 +6,22 @@
 
 
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
-#define findaPin A3
+#define findaPin 57 // A3
 
-#define idlerDirPin    A7
-#define idlerStepPin  A6
-#define idlerEnablePin  A2
+// Ramps X-axis
+#define selectorDirPin    55
+#define selectorStepPin   54
+#define selectorEnablePin 38
 
-#define pulleyDirPin    48 //  pin 48 for extruder motor direction pin
-#define pulleyStepPin    46 //  pin 48 for extruder motor stepper motor pin
-#define pulleyEnablePin  A8 //  pin A8 for extruder motor rst/sleep motor pin
+// Ramps Y-axis
+#define idlerDirPin       61
+#define idlerStepPin      60
+#define idlerEnablePin    56
 
-#define selectorDirPin    A1 //color selector stepper motor (driven by trapezoidal screw)
-#define selectorStepPin  A0
-#define selectorEnablePin  38
-
-
-//GENERAL
-#define ENABLE LOW                // stepper motor enable is active low
-#define DISABLE HIGH              // stepper motor disable is active high
+// Ramps Z-axis
+#define pulleyDirPin      48
+#define pulleyStepPin     46
+#define pulleyEnablePin   62
 
 
 
