@@ -6,7 +6,10 @@
 
 
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
-#define findaPin 3
+#define findaPin 3 // Ramps AUX-1 
+
+// Uncoment to use unstock finda sensor (in my case 12mm inductive sensor).
+//#ifdef UNSTOCK_FINDA
 
 // Ramps X-axis
 #define selectorDirPin    55

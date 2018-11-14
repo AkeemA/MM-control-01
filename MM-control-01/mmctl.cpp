@@ -22,11 +22,15 @@ bool isHomed = false;
 
 int check_finda()
 {
+#ifdef UNSTOCK_FINDA
     int reading = analogRead(findaPin);
     reading = reading - 110;
     if(reading<0) reading = reading * -1;
     if(reading>4) return 1;
     else return 0;
+#else
+    return digitalRead(findaPin);
+#endif
 }
 
 bool feed_filament()
