@@ -8,6 +8,7 @@ uint16_t shr16_v;
 
 void shr16_init(void)
 {
+    /*
 	DDRC |= 0x80;
 	DDRB |= 0x40;
 	DDRB |= 0x20;
@@ -17,6 +18,7 @@ void shr16_init(void)
 	shr16_v = 0;
 	shr16_write(shr16_v);
 	shr16_write(shr16_v);
+    */
 }
 
 void shr16_write(uint16_t v)
@@ -41,8 +43,11 @@ void shr16_write(uint16_t v)
 
 void shr16_set_led(uint16_t led)
 {
+// WK TODO nothing for now - wrap it somehow
+    /*
 	led = ((led & 0x00ff) << 8) | ((led & 0x0300) >> 2);
 	shr16_write((shr16_v & ~SHR16_LED_MSK) | led);
+    */
 }
 
 void shr16_set_ena(uint8_t ena)

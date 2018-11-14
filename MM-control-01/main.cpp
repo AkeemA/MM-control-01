@@ -10,7 +10,7 @@
 #include "adc.h"
 #include "uart.h"
 #include "spi.h"
-#include "tmc2130.h"
+#include "stepper_driver.h"
 #include "abtn3.h"
 #include "mmctl.h"
 #include "motion.h"
@@ -80,27 +80,30 @@ void setup()
 
 	fprintf_P(uart_com, PSTR("start\n")); //startup message
 
-	spi_init();
+    //spi_init();
 	led_blink(2);
 
-	tmc2130_init(HOMING_MODE); // trinamic, homing
+    //tmc2130_init(HOMING_MODE); // trinamic, homing
 	led_blink(3);
 
-	adc_init(); // ADC
+    //adc_init(); // ADC
 	led_blink(4);
 
-	shr16_set_ena(7);
+    pinMode(findaPin, INPUT);                        // pinda Filament sensor
+    pinMode(filamentSwitch, INPUT);
+
+    driver_init();
 	shr16_set_led(0x000);
 
 	init_Pulley();
 
 
 	// if FINDA is sensing filament do not home
-	while (digitalRead(A1) == 1)
+    while (digitalRead(findaPin) == 1)
 	{
 		while (Btn::right != buttonClicked())
 		{
-			if (digitalRead(A1) == 1)
+            if (digitalRead(findaPin) == 1)
 			{
 				shr16_set_led(0x2aa);
 			}
@@ -114,9 +117,7 @@ void setup()
 		}
 	}
 	
-	home();
-	//add reading previously stored mode (stealth/normal) from eeprom
-	tmc2130_init(tmc2130_mode); // trinamic, initialize all axes
+    home();
 	
 	// check if to goto the settings menu
 	if (buttonClicked() == Btn::middle)
@@ -274,15 +275,8 @@ void process_commands(FILE* inout)
 		}
 		else if (sscanf_P(line, PSTR("M%d"), &value) > 0)
 		{
-			// M0: set to normal mode; M1: set to stealth mode
-			switch (value) {
-				case 0: tmc2130_mode = NORMAL_MODE; break;
-				case 1: tmc2130_mode = STEALTH_MODE; break;
-				default: return;
-			}
-
-			//init all axes
-			tmc2130_init(tmc2130_mode);
+            //init all axes - nothing to do without tmc2130
+            //driver_init();
 			fprintf_P(inout, PSTR("ok\n"));
 		}
 		else if (sscanf_P(line, PSTR("U%d"), &value) > 0)
@@ -302,7 +296,7 @@ void process_commands(FILE* inout)
 		else if (sscanf_P(line, PSTR("P%d"), &value) > 0)
 		{
 			if (value == 0) // Read finda
-				fprintf_P(inout, PSTR("%dok\n"), digitalRead(A1));
+                fprintf_P(inout, PSTR("%dok\n"), digitalRead(findaPin));
 		}
 		else if (sscanf_P(line, PSTR("S%d"), &value) > 0)
 		{

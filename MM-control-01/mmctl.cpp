@@ -30,11 +30,7 @@ bool feed_filament()
 	park_idler(true);
 
 	set_pulley_dir_push();
-	if(tmc2130_mode == NORMAL_MODE)	
-		tmc2130_init_axis_current_normal(AX_PUL, 1, 15);
-	else
-		tmc2130_init_axis_current_stealth(AX_PUL, 1, 15); //probably needs tuning of currents
-
+	
 	do
 	{
 		do_pulley_step();
@@ -43,7 +39,7 @@ bool feed_filament()
 		if (_c > 50) { shr16_set_led(2 << 2 * (4 - active_extruder)); };
 		if (_c > 100) { shr16_set_led(0x000); _c = 0; _delay++; };
 
-		if (digitalRead(A1) == 1) { _loaded = true; _feed = false; };
+        if (digitalRead(findaPin) == 1) { _loaded = true; _feed = false; };
 		if (buttonClicked() != Btn::none && _delay > 10) { _loaded = false; _feed = false; }
 		delayMicroseconds(4000);
 	} while (_feed);
@@ -59,9 +55,6 @@ bool feed_filament()
 		}
 	}
 
-
-
-	tmc2130_disable_axis(AX_PUL, tmc2130_mode);
 	park_idler(false);
 	shr16_set_led(1 << 2 * (4 - active_extruder));
 	return true;

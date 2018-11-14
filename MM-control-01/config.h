@@ -4,6 +4,31 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+
+// ###### BEGIN - WOJCIECH KOPROWSKI CONF:
+#define findaPin A3
+
+#define idlerDirPin    A7
+#define idlerStepPin  A6
+#define idlerEnablePin  A2
+
+#define pulleyDirPin    48 //  pin 48 for extruder motor direction pin
+#define pulleyStepPin    46 //  pin 48 for extruder motor stepper motor pin
+#define pulleyEnablePin  A8 //  pin A8 for extruder motor rst/sleep motor pin
+
+#define selectorDirPin    A1 //color selector stepper motor (driven by trapezoidal screw)
+#define selectorStepPin  A0
+#define selectorEnablePin  38
+
+
+//GENERAL
+#define ENABLE LOW                // stepper motor enable is active low
+#define DISABLE HIGH              // stepper motor disable is active high
+
+
+
+// ###### END - WOJCIECH KOPROWSKI CONF
+
 //timer0
 //#define TIMER0_EVERY_1ms    _every_1ms    //1ms callback
 //#define TIMER0_EVERY_10ms   _every_10ms   //10ms callback
