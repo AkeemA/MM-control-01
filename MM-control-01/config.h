@@ -6,7 +6,7 @@
 
 
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
-#define findaPin 57 // A3
+#define findaPin 3
 
 // Ramps X-axis
 #define selectorDirPin    55

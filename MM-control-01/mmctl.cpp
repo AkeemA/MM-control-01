@@ -20,6 +20,15 @@ int toolChanges = 0;
 bool isPrinting = false;
 bool isHomed = false;
 
+int check_finda()
+{
+    int reading = analogRead(findaPin);
+    reading = reading - 110;
+    if(reading<0) reading = reading * -1;
+    if(reading>4) return 1;
+    else return 0;
+}
+
 bool feed_filament()
 {
 	bool _feed = true;
@@ -39,7 +48,7 @@ bool feed_filament()
 		if (_c > 50) { shr16_set_led(2 << 2 * (4 - active_extruder)); };
 		if (_c > 100) { shr16_set_led(0x000); _c = 0; _delay++; };
 
-        if (digitalRead(findaPin) == 1) { _loaded = true; _feed = false; };
+        if (check_finda() == 1) { _loaded = true; _feed = false; };
 		if (buttonClicked() != Btn::none && _delay > 10) { _loaded = false; _feed = false; }
 		delayMicroseconds(4000);
 	} while (_feed);

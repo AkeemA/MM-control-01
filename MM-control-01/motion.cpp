@@ -131,15 +131,15 @@ void load_filament_withSensor()
 		do_pulley_step();
 		_loadSteps++;
 		delayMicroseconds(5500);
-    } while (digitalRead(findaPin) == 0 && _loadSteps < 1500);
+    } while (check_finda() == 0 && _loadSteps < 1500);
 
 
 	// filament did not arrived at FINDA, let's try to correct that
-    if (digitalRead(findaPin) == 0)
+    if (check_finda() == 0)
 	{
 		for (int i = 6; i > 0; i--)
 		{
-            if (digitalRead(findaPin) == 0)
+            if (check_finda() == 0)
 			{
 				// attempt to correct
 				set_pulley_dir_pull();
@@ -156,14 +156,14 @@ void load_filament_withSensor()
 					do_pulley_step();
 					_loadSteps++;
 					delayMicroseconds(4000);
-                    if (digitalRead(findaPin) == 1) _endstop_hit++;
+                    if (check_finda() == 1) _endstop_hit++;
 				} while (_endstop_hit<100 && _loadSteps < 500);
 			}
 		}
 	}
 
 	// still not at FINDA, error on loading, let's wait for user input
-    if (digitalRead(findaPin) == 0)
+    if (check_finda() == 0)
 	{
 		bool _continue = false;
 		bool _isOk = false;
@@ -240,7 +240,7 @@ void load_filament_withSensor()
 			do_pulley_step();
 			_loadSteps++;
 			delayMicroseconds(5500);
-        } while (digitalRead(findaPin) == 0 && _loadSteps < 1500);
+        } while (check_finda() == 0 && _loadSteps < 1500);
 		// ?
 	}
 	else
@@ -295,7 +295,7 @@ void unload_filament_withSensor()
 		if (_unloadSteps < _second_point && _unloadSteps > 5000 && _speed > 550) _speed = _speed - 2;
 
 		delayMicroseconds(_speed);
-        if (digitalRead(findaPin) == 0 && _unloadSteps < 2500) _endstop_hit++;
+        if (check_finda() == 0 && _unloadSteps < 2500) _endstop_hit++;
 
 	} while (_endstop_hit < 100 && _unloadSteps > 0);
 
@@ -309,11 +309,11 @@ void unload_filament_withSensor()
 
 
 	// FINDA is still sensing filament, let's try to unload it once again
-    if (digitalRead(findaPin) == 1)
+    if (check_finda() == 1)
 	{
 		for (int i = 6; i > 0; i--)
 		{
-            if (digitalRead(findaPin) == 1)
+            if (check_finda() == 1)
 			{
 				set_pulley_dir_push();
 				for (int i = 150; i > 0; i--)
@@ -330,7 +330,7 @@ void unload_filament_withSensor()
 					do_pulley_step();
 					_steps--;
 					delayMicroseconds(3000);
-                    if (digitalRead(findaPin) == 0) _endstop_hit++;
+                    if (check_finda() == 0) _endstop_hit++;
 				} while (_endstop_hit < 100 && _steps > 0);
 			}
 			delay(100);
@@ -341,7 +341,7 @@ void unload_filament_withSensor()
 
 
 	// error, wait for user input
-    if (digitalRead(findaPin) == 1)
+    if (check_finda() == 1)
 	{
 		bool _continue = false;
 		bool _isOk = false;
@@ -562,7 +562,7 @@ void home()
 	
 	// home both idler and selector
 	home_idler();
-	home_selector();
+    home_selector();
 	
 	shr16_set_led(0x155);
 	move(idler_steps_after_homing, selector_steps_after_homing,0); // move to initial position
@@ -720,7 +720,7 @@ bool checkOk()
 
 	// filament in FINDA, let's try to unload it
 	set_pulley_dir_pull();
-    if (digitalRead(findaPin) == 1)
+    if (check_finda() == 1)
 	{
 		_steps = 3000;
 		_endstop_hit = 0;
@@ -728,12 +728,12 @@ bool checkOk()
 		{
 			do_pulley_step();
 			delayMicroseconds(3000);
-            if (digitalRead(findaPin) == 0) _endstop_hit++;
+            if (check_finda() == 0) _endstop_hit++;
 			_steps--;
 		} while (_steps > 0 && _endstop_hit < 50);
 	}
 
-    if (digitalRead(findaPin) == 0)
+    if (check_finda() == 0)
 	{
 		// looks ok, load filament to FINDA
 		set_pulley_dir_push();
@@ -744,7 +744,7 @@ bool checkOk()
 		{
 			do_pulley_step();
 			delayMicroseconds(3000);
-            if (digitalRead(findaPin) == 1) _endstop_hit++;
+            if (check_finda() == 1) _endstop_hit++;
 			_steps--;
 		} while (_steps > 0 && _endstop_hit < 50);
 

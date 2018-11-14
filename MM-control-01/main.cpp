@@ -98,11 +98,11 @@ void setup()
 
 
 	// if FINDA is sensing filament do not home
-    while (digitalRead(findaPin) == 1)
+    while (check_finda() == 1)
 	{
 		while (Btn::right != buttonClicked())
 		{
-            if (digitalRead(findaPin) == 1)
+            if (check_finda() == 1)
 			{
 				shr16_set_led(0x2aa);
 			}
@@ -295,7 +295,7 @@ void process_commands(FILE* inout)
 		else if (sscanf_P(line, PSTR("P%d"), &value) > 0)
 		{
 			if (value == 0) // Read finda
-                fprintf_P(inout, PSTR("%dok\n"), digitalRead(findaPin));
+                fprintf_P(inout, PSTR("%dok\n"), check_finda());
 		}
 		else if (sscanf_P(line, PSTR("S%d"), &value) > 0)
 		{

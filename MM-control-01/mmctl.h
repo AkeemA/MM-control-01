@@ -14,6 +14,7 @@ extern int previous_extruder;
 extern bool isFilamentLoaded;
 extern bool isIdlerParked;
 
+extern int check_finda();
 
 extern bool home_idler();
 extern bool home_selector();
