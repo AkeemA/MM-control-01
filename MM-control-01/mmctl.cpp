@@ -20,7 +20,7 @@ int toolChanges = 0;
 bool isPrinting = false;
 bool isHomed = false;
 
-int check_finda()
+int check_finda() // output: 1 - there is filament; 0 - no filament
 {
 #ifdef UNSTOCK_FINDA
     int reading = analogRead(findaPin);
@@ -30,6 +30,19 @@ int check_finda()
     else return 0;
 #else
     return digitalRead(findaPin);
+#endif
+}
+
+int check_extruder_sensor() // output: 1 - there is filament; 0 - no filament
+{
+#ifdef UNSTOCK_pinda
+    int reading = analogRead(findaPin);
+    reading = reading - 110;
+    if(reading<0) reading = reading * -1;
+    if(reading>4) return 1;
+    else return 0;
+#else
+    return digitalRead(extruderSensorPin);
 #endif
 }
 

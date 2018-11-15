@@ -6,7 +6,16 @@
 
 
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
-#define findaPin 3 // Ramps AUX-1 
+
+
+// Ramps AUX-1 pinout:
+// [5V] [GND]   [D1]     [D0]
+// [5V] [GND] [A3/D57] [A4/D58]
+// ------- BOARD EDGE ---------
+//
+// In AUX-1 you can connect 2 sensors even if they are "Digital" or "Analog"
+#define findaPin 3 // Ramps AUX-1 pin A3
+#define extruderSensorPin 4 // Ramps AUX-1 pin A4
 
 // Uncoment to use unstock finda sensor (in my case 12mm inductive sensor).
 //#ifdef UNSTOCK_FINDA

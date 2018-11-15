@@ -16,6 +16,7 @@ const int idler_steps_after_homing = -130;
 const int selector_steps = 2790/4;
 const int idler_steps = 1420 / 4;    // 2 msteps = 180 / 4
 const int idler_parking_steps = (idler_steps / 2) + 40;  // 40
+#define STEPS_FOR_MM 500 // TODO: CHECK THE REAL VALUE / CONFIGURE
 
 const int bowden_length = 1000;
 // endstop to tube  - 30 mm, 550 steps
@@ -42,6 +43,42 @@ void do_idler_step();
 void set_positions(int _current_extruder, int _next_extruder);
 
 bool checkOk();
+
+
+unsigned long int length_spool_finda = 1500;
+unsigned long int length_finda_extSens = 10000;
+unsigned long int length_extSens_BondTech = 1000;
+unsigned long int length_BondTech_extruder = 500;
+
+// Preparation for getting info from menu/calibration/user input/storage
+unsigned long int getSteps_for_mm()
+{
+    return STEPS_FOR_MM;
+}
+
+// Preparation for getting info from menu/calibration/user input/storage
+unsigned long int getLength_spool_finda()
+{
+    return length_spool_finda;
+}
+
+// Preparation for getting info from menu/calibration/user input/storage
+unsigned long int getLength_finda_extSens()
+{
+    return length_finda_extSens;
+}
+
+// Preparation for getting info from menu/calibration/user input/storage
+unsigned long int getLength_extSens_BondTech()
+{
+    return length_extSens_BondTech;
+}
+
+// Preparation for getting info from menu/calibration/user input/storage
+unsigned long int getLength_BondTech_extruder()
+{
+    return length_BondTech_hotend;
+}
 
 void cut_filament()
 {
@@ -121,17 +158,17 @@ void load_filament_withSensor()
     //??driver_enable_motor(pulleyEnablePin);
 	set_pulley_dir_push();
 
-	int _loadSteps = 0;
 	int _endstop_hit = 0;
 
 	// load filament until FINDA senses end of the filament, means correctly loaded into the selector
 	// we can expect something like 570 steps to get in sensor
+    unsigned long int _loadSteps = getLength_spool_finda(); // 1500 - default from PRUSA
 	do
 	{
 		do_pulley_step();
-		_loadSteps++;
+        _loadSteps--;
 		delayMicroseconds(5500);
-    } while (check_finda() == 0 && _loadSteps < 1500);
+    } while (check_finda() == 0 && _loadSteps > 0);
 
 
 	// filament did not arrived at FINDA, let's try to correct that
@@ -150,14 +187,14 @@ void load_filament_withSensor()
 				}
 
 				set_pulley_dir_push();
-				_loadSteps = 0;
+                _loadSteps = 500;
 				do
 				{
 					do_pulley_step();
-					_loadSteps++;
+                    _loadSteps--;
 					delayMicroseconds(4000);
                     if (check_finda() == 1) _endstop_hit++;
-				} while (_endstop_hit<100 && _loadSteps < 500);
+                } while (_endstop_hit<100 && _loadSteps > 0);
 			}
 		}
 	}
@@ -234,13 +271,13 @@ void load_filament_withSensor()
 		
 		park_idler(true);
 		// TODO: do not repeat same code, try to do it until succesfull load
-		_loadSteps = 0;
+        _loadSteps = getLength_spool_finda();
 		do
 		{
 			do_pulley_step();
-			_loadSteps++;
+            _loadSteps--;
 			delayMicroseconds(5500);
-        } while (check_finda() == 0 && _loadSteps < 1500);
+        } while (check_finda() == 0 && _loadSteps > 0);
 		// ?
 	}
 	else
@@ -249,16 +286,27 @@ void load_filament_withSensor()
 	}
 
 	{
-	float _speed = 4500;
-    const uint16_t steps = BowdenLength::get(); // TODO replace it somehow or implement permanent storage?
 
-		for (uint16_t i = 0; i < steps; i++)
+        float _speed = 4500;
+        _loadSteps = getLength_finda_extSens(); // lengt between 2 sensors
+        int i = 0;
+        do
+        {
+            do_pulley_step();
+            i++;
+            if (i > round(_loadSteps*0.001) && i < round(_loadSteps*0.45) && _speed > 650) _speed = _speed - 4;
+            if (i > round(_loadSteps*0.01) && i < round(_loadSteps*0.45) && _speed > 650) _speed = _speed - 1;
+            if (i > round(_loadSteps*0.9) && _speed < 3000) _speed = _speed + 2;
+            delayMicroseconds(_speed);
+        } while (check_extruder_sensor() == 0 && i < _loadSteps);
+
+
+        _speed = 3000;
+
+        _loadSteps = getLength_extSens_BondTech();
+        for (uint16_t i = 0; i < _loadSteps; i++)
 		{
 			do_pulley_step();
-
-			if (i > 10 && i < 4000 && _speed > 650) _speed = _speed - 4;
-			if (i > 100 && i < 4000 && _speed > 650) _speed = _speed - 1;
-			if (i > 8000 && _speed < 3000) _speed = _speed + 2;
 			delayMicroseconds(_speed);
 		}
 	}
@@ -282,66 +330,78 @@ void unload_filament_withSensor()
 	float _second_point = 8700;   
 	int _endstop_hit = 0;
 
-
-	// unload until FINDA senses end of the filament
-	int _unloadSteps = 10000;
-	do
-	{
-		do_pulley_step();
-		_unloadSteps--;
-
-		if (_unloadSteps < 1400 && _speed < 6000) _speed = _speed + 3;
-		if (_unloadSteps < _first_point && _speed < 2500) _speed = _speed + 2;
-		if (_unloadSteps < _second_point && _unloadSteps > 5000 && _speed > 550) _speed = _speed - 2;
-
-		delayMicroseconds(_speed);
-        if (check_finda() == 0 && _unloadSteps < 2500) _endstop_hit++;
-
-	} while (_endstop_hit < 100 && _unloadSteps > 0);
-
-	// move a little bit so it is not a grinded hole in filament
-	for (int i = 100; i > 0; i--)
-	{
-		do_pulley_step();
-		delayMicroseconds(5000);
-	}
+// I stage: unload from hotend to filament sensor on top of the mk3 extruder
+// Speed of unload is 2000 microseconds/step = 2 miliseconds/step try for 2s, if after that sensor will still sense filament we will raise the error
+    int _unloadSteps = getLength_extSens_BondTech() + 10 * getSteps_for_mm(); // move for BONDTECH gear --- extruder sensor distance + additional 10 mm
+    while(check_extruder_sensor() == 1 && _unloadSteps > 0)
+    {
+        do_pulley_step();
+        _unloadSteps--;
+        delayMicroseconds(_speed);
+    }
 
 
+    if(check_extruder_sensor() == 0) // Check if unloading from hotend to extruder filamend sensor was successful, if yes extrude to FINDA sensor on MMU2
+    {
 
-	// FINDA is still sensing filament, let's try to unload it once again
-    if (check_finda() == 1)
-	{
-		for (int i = 6; i > 0; i--)
-		{
-            if (check_finda() == 1)
-			{
-				set_pulley_dir_push();
-				for (int i = 150; i > 0; i--)
-				{
-					do_pulley_step();
-					delayMicroseconds(4000);
-				}
+// II stage: filament reached extruder sensor -> unload until FINDA senses end of the filament
+        _unloadSteps = getLength_finda_extSens() + 20 * getSteps_for_mm(); // move for BONDTECH gear --- extruder sensor distance + additional 20 mm
+        unsigned long i = _unloadSteps;
+        do
+        {
+            do_pulley_step();
+            i--;
 
-				set_pulley_dir_pull();
-				int _steps = 4000;
-				_endstop_hit = 0;
-				do
-				{
-					do_pulley_step();
-					_steps--;
-					delayMicroseconds(3000);
-                    if (check_finda() == 0) _endstop_hit++;
-				} while (_endstop_hit < 100 && _steps > 0);
-			}
-			delay(100);
-		}
+            if (i < round(_unloadSteps*0.15) && _speed < 6000) _speed = _speed + 3;
+            if (i < round(_unloadSteps*0.20) && _speed < 2500) _speed = _speed + 2;
+            if (i < round(_unloadSteps*0.90) && i > round(_unloadSteps*0.50) && _speed > 550) _speed = _speed - 2;
 
-	}
+            delayMicroseconds(_speed);
+            if (check_finda() == 0 && i < round(_unloadSteps*0.25)) _endstop_hit++;
 
+        } while (_endstop_hit < 100 && i > 0);
+
+        // move a little bit so it is not a grinded hole in filament
+        for (int i = 100; i > 0; i--) // TODO: change for steps_for_mm
+        {
+            do_pulley_step();
+            delayMicroseconds(5000);
+        }
+
+        // FINDA is still sensing filament, let's try to unload it once again // TODO change it for steps_for_mm
+        if (check_finda() == 1)
+        {
+            for (int i = 6; i > 0; i--)
+            {
+                if (check_finda() == 1)
+                {
+                    set_pulley_dir_push();
+                    for (int i = 150; i > 0; i--)
+                    {
+                        do_pulley_step();
+                        delayMicroseconds(4000);
+                    }
+
+                    set_pulley_dir_pull();
+                    int _steps = 4000;
+                    _endstop_hit = 0;
+                    do
+                    {
+                        do_pulley_step();
+                        _steps--;
+                        delayMicroseconds(3000);
+                        if (check_finda() == 0) _endstop_hit++;
+                    } while (_endstop_hit < 100 && _steps > 0);
+                }
+                delay(100);
+            }
+
+        }
+    }
 
 
 	// error, wait for user input
-    if (check_finda() == 1)
+    if (check_finda() == 1 || check_extruder_sensor() == 1)
 	{
 		bool _continue = false;
 		bool _isOk = false;
@@ -413,7 +473,7 @@ void unload_filament_withSensor()
 		_speed = 5000;
 		// unload to PTFE tube
 		set_pulley_dir_pull();
-		for (int i = 450; i > 0; i--)   // 570
+        for (int i = 450; i > 0; i--)   // TODO change for steps_for_mm
 		{
 			do_pulley_step();
 			delayMicroseconds(_speed);
@@ -424,7 +484,7 @@ void unload_filament_withSensor()
 	isFilamentLoaded = false; // filament unloaded 
 }
 
-void load_filament_inPrinter()
+void load_filament_inPrinter() // TODO: think about changing it also to configurable value to be independedn from motor steps/rev
 {
     // loads filament after confirmed by printer into the Bontech pulley gears so they can grab them
 
@@ -434,7 +494,7 @@ void load_filament_inPrinter()
 	set_pulley_dir_push();
 
     //PLA
-	for (int i = 0; i <= 320; i++)
+    for (int i = 0; i <= getLength_BondTech_extruder(); i++)
 	{
 		do_pulley_step();
 		delayMicroseconds(2600);
@@ -442,7 +502,7 @@ void load_filament_inPrinter()
 
 	//PLA
 
-	for (int i = 0; i <= 450; i++)
+    for (int i = 0; i <= getLength_BondTech_extruder(); i++) // TODO: check why it is used twice -> different speed ?
 	{
 		do_pulley_step();
 		delayMicroseconds(2200); 
@@ -454,9 +514,8 @@ void load_filament_inPrinter()
 
 void init_Pulley()
 {
-    	float _speed = 3000;
+    float _speed = 3000;
 	
-
 	set_pulley_dir_push();
 	for (int i = 50; i > 0; i--)
 	{
