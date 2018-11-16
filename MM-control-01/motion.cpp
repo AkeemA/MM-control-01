@@ -77,7 +77,7 @@ unsigned long int getLength_extSens_BondTech()
 // Preparation for getting info from menu/calibration/user input/storage
 unsigned long int getLength_BondTech_extruder()
 {
-    return length_BondTech_hotend;
+    return length_BondTech_extruder;
 }
 
 void cut_filament()

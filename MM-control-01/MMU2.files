@@ -8,6 +8,8 @@ config.h
 diag.c
 diag.h
 dirty.h
+display.c
+display.h
 main.cpp
 main.h
 mmctl.cpp

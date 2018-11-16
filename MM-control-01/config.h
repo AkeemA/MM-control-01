@@ -7,6 +7,7 @@
 
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
 
+#define DEBUG
 
 // Ramps AUX-1 pinout:
 // [5V] [GND]   [D1]     [D0]
@@ -18,7 +19,7 @@
 #define extruderSensorPin 4 // Ramps AUX-1 pin A4
 
 // Uncoment to use unstock finda sensor (in my case 12mm inductive sensor).
-//#ifdef UNSTOCK_FINDA
+//#define UNSTOCK_FINDA
 
 // Ramps X-axis
 #define selectorDirPin    55

@@ -9,6 +9,11 @@
 #define ENABLE LOW                // stepper motor enable is active low
 #define DISABLE HIGH              // stepper motor disable is active high
 
+#ifdef DEBUG
+#define DBG_PRINT(x) Serial.println(x)
+#else
+#define DBG_PRINT(x)
+#endif
 
 void manual_extruder_selector();
 

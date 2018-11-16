@@ -1,14 +1,14 @@
 //! @file
 
-
 #include "main.h"
 #include <stdio.h>
 #include <string.h>
 #include <avr/io.h>
 #include "shr16.h"
+#include "OLED_display.h"
 #include "adc.h"
 #include "uart.h"
-#include "spi.h"
+//#include "SPI.h"
 #include "stepper_driver.h"
 #include "abtn3.h"
 #include "mmctl.h"
@@ -18,18 +18,13 @@
 #include "permanent_storage.h"
 #include "version.h"
 
-
 int8_t sys_state = 0;
 uint8_t sys_signals = 0;
 int _loop = 0;
 int _c = 0;
 uint8_t tmc2130_mode = NORMAL_MODE;
 
-#if (UART_COM == 0)
-FILE* uart_com = uart0io;
-#elif (UART_COM == 1)
 FILE* uart_com = uart1io;
-#endif //(UART_COM == 0)
 
 extern "C" {
 void process_commands(FILE* inout);
@@ -61,21 +56,17 @@ void process_commands(FILE* inout);
 //! @n b - blinking
 void setup()
 {
-
+  LCD_init();
 	shr16_init(); // shift register
 	led_blink(0);
-
-	uart0_init(); //uart0
+  Serial.begin(115200);
+  Serial.println("Hello!");
 	uart1_init(); //uart1
 	led_blink(1);
 
-#if (UART_STD == 0)
-	stdin = uart0io; // stdin = uart0
-	stdout = uart0io; // stdout = uart0
-#elif (UART_STD == 1)
+
 	stdin = uart1io; // stdin = uart1
-	stdout = uart1io; // stdout = uart1
-#endif //(UART_STD == 1)
+    stdout = uart1io; // stdout = uart1
 
 	fprintf_P(uart_com, PSTR("start\n")); //startup message
 
@@ -123,8 +114,6 @@ void setup()
 	{
 		setupMenu();
 	}
-	
-	
 }
 
 
@@ -187,6 +176,9 @@ void manual_extruder_selector()
 		shr16_set_led(1 << 2 * 0);
 		delay(50);
 	}
+
+ LCD_print(4,2,"Fake MMU2");
+ LCD_print(4,3," Welcome!");
 }
 
 //! @brief main loop
@@ -198,8 +190,15 @@ void manual_extruder_selector()
 //! middle | feed filament
 //!
 //! @copydoc manual_extruder_selector()
+
+int i = 0;
 void loop()
 {
+  if(i==0) LCD_print(0,0,"|");
+  if(i==1) LCD_print(0,0,"/");
+  if(i==2) LCD_print(0,0,"-");
+  if(i==3) LCD_print(0,0,"\\");
+  if(i<3) i++; else i=0;
 	process_commands(uart_com);
 
 	if (!isPrinting)
