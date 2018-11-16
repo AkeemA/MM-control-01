@@ -3,7 +3,20 @@
 
 #include "permanent_storage.h"
 #include "mmctl.h"
+#include "main.h"
 #include <avr/eeprom.h>
+
+#ifdef PSTOR_LOG
+#define LOG(x) DBG_PRINT(x)
+#else
+#define LOG(x)
+#endif
+
+#ifdef PSTOR_TRACE
+#define TRACE_LOG(x) DBG_PRINT(x)
+#else
+#define TRACE_LOG(x)
+#endif
 
 //! @brief EEPROM data layout
 //!
@@ -28,8 +41,20 @@ static const uint16_t eepromBowdenLenMaximum = 10900u; //!< Maximum bowden lengt
 //! @retval false invalid
 static bool validFilament(uint8_t filament)
 {
-	if (filament < (sizeof(eeprom_t::eepromBowdenLen)/sizeof(eeprom_t::eepromBowdenLen[0]))) return true;
-	else return false;
+    TRACE_LOG("Called, parameters:");
+    TRACE_LOG(filament);
+    TRACE_LOG("result:");
+
+    if (filament < (sizeof(eeprom_t::eepromBowdenLen)/sizeof(eeprom_t::eepromBowdenLen[0])))
+    {
+        TRACE_LOG("true");
+        return true;
+    }
+    else
+    {
+        TRACE_LOG("false");
+        return false;
+    }
 }
 
 //! @brief Is bowden length in valid range?
@@ -38,9 +63,19 @@ static bool validFilament(uint8_t filament)
 //! @retval false invalid
 static bool validBowdenLen (const uint16_t BowdenLength)
 {
-	if ((BowdenLength >= eepromBowdenLenMinimum)
-			&& BowdenLength <= eepromBowdenLenMaximum) return true;
-	return false;
+    TRACE_LOG("Called, parameters:");
+    TRACE_LOG(BowdenLength);
+    TRACE_LOG("result:");
+    if ((BowdenLength >= eepromBowdenLenMinimum) && BowdenLength <= eepromBowdenLenMaximum)
+    {
+        TRACE_LOG("true");
+        return true;
+    }
+    else
+    {
+        TRACE_LOG("false");
+        return false;
+    }
 }
 
 //! @brief Get bowden length for active filament
@@ -49,6 +84,7 @@ static bool validBowdenLen (const uint16_t BowdenLength)
 //! @return stored bowden length
 uint16_t BowdenLength::get()
 {
+    TRACE_LOG("Start");
 	uint8_t filament = active_extruder;
 	if (validFilament(filament))
 	{
@@ -62,9 +98,16 @@ uint16_t BowdenLength::get()
 				bowdenLength = eepromLengthCorrectionBase + LengthCorrectionLegacy * 10;
 			}
 		}
-		if (validBowdenLen(bowdenLength)) return bowdenLength;
+        if (validBowdenLen(bowdenLength))
+        {
+            TRACE_LOG("End, result:");
+            TRACE_LOG(bowdenLength);
+            return bowdenLength;
+        }
 	}
 
+    TRACE_LOG("End, result:");
+    TRACE_LOG(eepromBowdenLenDefault);
 	return eepromBowdenLenDefault;
 }
 
@@ -75,6 +118,7 @@ uint16_t BowdenLength::get()
 //! Active filament and associated bowden length is stored in member variables.
 BowdenLength::BowdenLength() : m_filament(active_extruder), m_length(BowdenLength::get())
 {
+    TRACE_LOG("Called");
 }
 
 //! @brief Increase bowden length
@@ -84,11 +128,14 @@ BowdenLength::BowdenLength() : m_filament(active_extruder), m_length(BowdenLengt
 //! @retval false failed, it is not possible to increase, new bowden length would be out of range
 bool BowdenLength::increase()
 {
+    TRACE_LOG("Called, result:");
 	if ( validBowdenLen(m_length + stepSize))
 	{
-		m_length += stepSize;
+        m_length += stepSize;
+        TRACE_LOG("true");
 		return true;
 	}
+    TRACE_LOG("false");
 	return false;
 }
 
@@ -99,23 +146,28 @@ bool BowdenLength::increase()
 //! @retval false failed, it is not possible to decrease, new bowden length would be out of range
 bool BowdenLength::decrease()
 {
+    TRACE_LOG("Called, result:");
 	if ( validBowdenLen(m_length - stepSize))
 	{
 		m_length -= stepSize;
+        TRACE_LOG("true");
 		return true;
 	}
+    TRACE_LOG("false");
 	return false;
 }
 
 //! @brief Store bowden length permanently.
 BowdenLength::~BowdenLength()
 {
+    TRACE_LOG("Called");
 	if (validFilament(m_filament))eeprom_update_word(&(eepromBase->eepromBowdenLen[m_filament]), m_length);
 }
 
 //! @brief Erase whole EEPROM
 void BowdenLength::eraseAll()
 {
+    TRACE_LOG("Called");
 	for (uint16_t i = 0; i < 1024; i++)
 	{
 		eeprom_update_byte((uint8_t*)i, static_cast<uint8_t>(eepromEmpty));

@@ -1,5 +1,4 @@
 #include "motion.h"
-#include "shr16.h"
 #include "stepper_driver.h"
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -9,6 +8,19 @@
 #include "mmctl.h"
 #include "Buttons.h"
 #include "permanent_storage.h"
+
+#ifdef MOTION_LOG
+#define LOG(x) DBG_PRINT(x)
+#else
+#define LOG(x)
+#endif
+
+#ifdef MOTION_TRACE
+#define TRACE_LOG(x) DBG_PRINT(x)
+#else
+#define TRACE_LOG(x)
+#endif
+
 
 const int selector_steps_after_homing = -3700;
 const int idler_steps_after_homing = -130;
@@ -53,49 +65,66 @@ unsigned long int length_BondTech_extruder = 500;
 // Preparation for getting info from menu/calibration/user input/storage
 unsigned long int getSteps_for_mm()
 {
+    TRACE_LOG("Called, result:");
+    TRACE_LOG(STEPS_FOR_MM);
     return STEPS_FOR_MM;
 }
 
 // Preparation for getting info from menu/calibration/user input/storage
 unsigned long int getLength_spool_finda()
 {
+    TRACE_LOG("Called, result:");
+    TRACE_LOG(length_spool_finda);
     return length_spool_finda;
 }
 
 // Preparation for getting info from menu/calibration/user input/storage
 unsigned long int getLength_finda_extSens()
 {
+    TRACE_LOG("Called, result:");
+    TRACE_LOG(length_finda_extSens);
     return length_finda_extSens;
 }
 
 // Preparation for getting info from menu/calibration/user input/storage
 unsigned long int getLength_extSens_BondTech()
 {
+    TRACE_LOG("Called, result:");
+    TRACE_LOG(length_extSens_BondTech);
     return length_extSens_BondTech;
 }
 
 // Preparation for getting info from menu/calibration/user input/storage
 unsigned long int getLength_BondTech_extruder()
 {
+    TRACE_LOG("Called, result:");
+    TRACE_LOG(length_BondTech_extruder);
     return length_BondTech_extruder;
 }
 
 void cut_filament()
 {
+    TRACE_LOG("Called: cut_filament");
 }
 
 void set_positions(int _current_extruder, int _next_extruder)
 {
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(_current_extruder);
+    TRACE_LOG(_next_extruder);
 	// steps to move to new position of idler and selector
 	int _selector_steps = ((_current_extruder - _next_extruder) * selector_steps) * -1;
 	int _idler_steps = (_current_extruder - _next_extruder) * idler_steps;
 
 	// move both to new position
 	move_proportional(_idler_steps, _selector_steps);
+    TRACE_LOG("End");
 }
 
 void eject_filament(int extruder)
 {
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(extruder);
 	//move selector sideways and push filament forward little bit, so user can catch it, unpark idler at the end to user can pull filament out
 	int selector_position = 0;
 	int steps = 0;
@@ -139,19 +168,24 @@ void eject_filament(int extruder)
 	//unpark idler so user can easily remove filament
 	park_idler(false);
         //??driver_disable_all();
+    TRACE_LOG("End");
 }
 
 void recover_after_eject()
 {
+    TRACE_LOG("Start");
     //restore state before eject filament
     //??driver_enable_motor(idlerEnablePin);
     //??driver_enable_motor(selectorEnablePin);
     move_proportional(-idler_steps_for_eject, -selector_steps_for_eject);
     //??driver_disable_all();
+    TRACE_LOG("End");
 }
 
 void load_filament_withSensor()
 {
+    TRACE_LOG("Start");
+
     //??driver_enable_motor(idlerEnablePin);
 	if (isIdlerParked) park_idler(true); // if idler is in parked position un-park him get in contact with filament
 
@@ -210,17 +244,17 @@ void load_filament_withSensor()
 		park_idler(false);
 		do
 		{
-			shr16_set_led(0x000);
+            all_leds_off();
 			delay(800);
 			if (!_isOk)
 			{
-				shr16_set_led(2 << 2 * (4 - active_extruder));
+                led_on(active_extruder,GREEN_LED);
 			}
 			else
-			{
-				shr16_set_led(1 << 2 * (4 - active_extruder));
-				delay(100);
-				shr16_set_led(2 << 2 * (4 - active_extruder));
+            {
+                led_on(active_extruder,RED_LED);
+                delay(100);
+                led_on(active_extruder,GREEN_LED);
 				delay(100);
 			}
 			delay(800);
@@ -313,10 +347,12 @@ void load_filament_withSensor()
 
     	//??driver_disable_all();
 	isFilamentLoaded = true;  // filament loaded 
+    TRACE_LOG("End");
 }
 
 void unload_filament_withSensor()
 {
+    TRACE_LOG("Start");
     // unloads filament from extruder - filament is above Bondtech gears
     //??driver_enable_motor(pulleyEnablePin);
     //??driver_enable_motor(idlerEnablePin);
@@ -409,17 +445,17 @@ void unload_filament_withSensor()
 		park_idler(false);
 		do
 		{
-			shr16_set_led(0x000);
+            all_leds_off();
 			delay(100);
 			if (!_isOk)
 			{
-				shr16_set_led(2 << 2 * (4 - active_extruder));
+                led_on(active_extruder,GREEN_LED);
 			}
 			else
 			{
-				shr16_set_led(1 << 2 * (4 - active_extruder));
+                led_on(active_extruder,RED_LED);
 				delay(100);
-				shr16_set_led(2 << 2 * (4 - active_extruder));
+                led_on(active_extruder,GREEN_LED);
 				delay(100);
 			}
 			delay(100);
@@ -463,8 +499,8 @@ void unload_filament_withSensor()
 
 
 		} while (!_continue);
-		
-		shr16_set_led(1 << 2 * (4 - previous_extruder));
+
+        led_on(previous_extruder,RED_LED);
 		park_idler(true);
 	}
 	else
@@ -482,10 +518,12 @@ void unload_filament_withSensor()
 	park_idler(false);
     //??driver_disable_all();
 	isFilamentLoaded = false; // filament unloaded 
+    TRACE_LOG("End");
 }
 
 void load_filament_inPrinter() // TODO: think about changing it also to configurable value to be independedn from motor steps/rev
 {
+    TRACE_LOG("Start");
     // loads filament after confirmed by printer into the Bontech pulley gears so they can grab them
 
     //??driver_init_motor(idlerEnablePin);
@@ -510,10 +548,12 @@ void load_filament_inPrinter() // TODO: think about changing it also to configur
 		
     park_idler(false);
     //??driver_disable_all();
+    TRACE_LOG("End");
 }
 
 void init_Pulley()
 {
+    TRACE_LOG("Start");
     float _speed = 3000;
 	
 	set_pulley_dir_push();
@@ -521,37 +561,44 @@ void init_Pulley()
 	{
 		do_pulley_step();
 		delayMicroseconds(_speed);
-		shr16_set_led(1 << 2 * (int)(i/50));
+        led_on(previous_extruder,RED_LED);
+        led_on(4-(int)(i/10),RED_LED);
 	}
 
 	set_pulley_dir_pull();
 	for (int i = 50; i > 0; i--)
 	{
 		do_pulley_step();
-		delayMicroseconds(_speed);
-		shr16_set_led(1 << 2 * (4-(int)(i / 50)));
+        delayMicroseconds(_speed);
+        led_on((int)(i/10),RED_LED);
 	}
 
+    TRACE_LOG("End");
 }
 
 void do_pulley_step()
 {
+    TRACE_LOG("Start");
     digitalWrite(pulleyStepPin, HIGH);
     asm("nop");
     digitalWrite(pulleyStepPin, LOW);
 	asm("nop");
+    TRACE_LOG("End");
 }
 
 void do_idler_step()
 {
+    TRACE_LOG("Start");
     digitalWrite(idlerStepPin, HIGH);
 	asm("nop");
     digitalWrite(idlerStepPin, LOW);
 	asm("nop");
+    TRACE_LOG("End");
 }
 
 void park_idler(bool _unpark)
 {
+    TRACE_LOG("Start");
 
 	if (_unpark) // get idler in contact with filament
 	{
@@ -563,13 +610,15 @@ void park_idler(bool _unpark)
 		move(idler_parking_steps*-1, 0,0);
 		isIdlerParked = true;
 	}
-	 
+
+    TRACE_LOG("End");
 }
 
 bool home_idler()
 {
+    TRACE_LOG("Start");
 	int _c = 0;
-	int _l = 0;
+    int _l = 4;
 
 	for (int c = 1; c > 0; c--)  // not really functional, let's do it rather more times to be sure
 	{
@@ -581,16 +630,19 @@ bool home_idler()
             delayMicroseconds(100);
 
 			_c++;
-			if (i == 1000) { _l++; }
-			if (_c > 100) { shr16_set_led(1 << 2 * _l); };
-			if (_c > 200) { shr16_set_led(0x000); _c = 0; };
+            if (i == 1000) { _l--; }
+            if (_c > 100) { led_on(_l,RED_LED); };
+            if (_c > 200) { all_leds_off(); _c = 0; };
 		}
-	}
+    }
+    TRACE_LOG("End, result:");
+    TRACE_LOG(true);
 	return true;
 }
 
 bool home_selector()
 {
+    TRACE_LOG("Start");
 	 
 	int _c = 0;
 	int _l = 2;
@@ -601,45 +653,49 @@ bool home_selector()
 		delay(50);
 		for (int i = 0; i < 4000; i++)
 		{
-			move(0, 1,0);
-			//uint16_t sg = tmc2130_read_sg(1);
-			//if ((i > 16) && (sg < 6))	break;
-
+            move(0, 1,0);
 			_c++;
-			if (i == 3000) { _l++; }
-			if (_c > 100) { shr16_set_led(1 << 2 * _l); };
-			if (_c > 200) { shr16_set_led(0x000); _c = 0; };
+            if (i == 3000) { _l--; }
+            if (_c > 100) { led_on(_l,RED_LED); }
+            if (_c > 200) { all_leds_off(); _c = 0; }
 		}
 	}
-	
+
+    TRACE_LOG("End, result:");
+    TRACE_LOG(true);
 	return true;
 }
 
 void home()
 {
+    TRACE_LOG("Start");
 	move(-10, -100,0); // move a bit in opposite direction
 	
 	// home both idler and selector
 	home_idler();
     home_selector();
-	
-	shr16_set_led(0x155);
+
+    all_leds_on(GREEN_LED);
 	move(idler_steps_after_homing, selector_steps_after_homing,0); // move to initial position
 
 	active_extruder = 0;
 
 	park_idler(false);
-	shr16_set_led(0x000);
+    all_leds_off();
 	
 	isFilamentLoaded = false; 
-	shr16_set_led(1 << 2 * (4-active_extruder));
+    led_on(active_extruder,RED_LED);
 
-  isHomed = true;
+    isHomed = true;
+    TRACE_LOG("End");
 }
  
 
 void move_proportional(int _idler, int _selector)
 {
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(_idler);
+    TRACE_LOG(_selector);
 	// gets steps to be done and set direction
 	_idler = set_idler_direction(_idler);
 	_selector = set_selector_direction(_selector);
@@ -681,10 +737,16 @@ void move_proportional(int _idler, int _selector)
 		if (_speed < 2500 && _selector < _end) { _speed = _speed + 10; }
 
 	} while (_selector != 0 || _idler != 0 );
+
+    TRACE_LOG("End");
 }
 
 void move(int _idler, int _selector, int _pulley)
 {
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(_idler);
+    TRACE_LOG(_selector);
+    TRACE_LOG(_pulley);
 	int _acc = 50;
 
 	// gets steps to be done and set direction
@@ -707,21 +769,27 @@ void move(int _idler, int _selector, int _pulley)
 		if (_acc > 0) { delayMicroseconds(_acc*10); _acc = _acc - 1; }; // super pseudo acceleration control
 
 	} while (_selector != 0 || _idler != 0 || _pulley != 0);
+
+    TRACE_LOG("End, parameters:");
 }
 
 
 void set_idler_dir_down()
 {
+    TRACE_LOG("Called");
     digitalWrite(idlerDirPin, LOW);
 }
 void set_idler_dir_up()
 {
+    TRACE_LOG("Called");
     digitalWrite(idlerDirPin, HIGH);
 }
 
 
 int set_idler_direction(int _steps)
 {
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(_steps);
 	if (_steps < 0)
 	{
 		_steps = _steps * -1;
@@ -731,10 +799,14 @@ int set_idler_direction(int _steps)
 	{
 		set_idler_dir_up();
 	}
+    TRACE_LOG("End, result:");
+    TRACE_LOG(_steps);
 	return _steps;
 }
 int set_selector_direction(int _steps)
 {
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(_steps);
 	if (_steps < 0)
 	{
         _steps = _steps * -1;
@@ -744,10 +816,14 @@ int set_selector_direction(int _steps)
 	{
         digitalWrite(selectorDirPin, HIGH);
     }
+    TRACE_LOG("End, result:");
+    TRACE_LOG(_steps);
 	return _steps;
 }
 int set_pulley_direction(int _steps)
 {
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(_steps);
 	if (_steps < 0)
 	{
 		_steps = _steps * -1;
@@ -757,21 +833,26 @@ int set_pulley_direction(int _steps)
 	{
 		set_pulley_dir_push();
 	}
+    TRACE_LOG("End, result:");
+    TRACE_LOG(_steps);
 	return _steps;
 }
 
 void set_pulley_dir_push()
 {
+    TRACE_LOG("Called");
     digitalWrite(pulleyDirPin, LOW);
 }
 void set_pulley_dir_pull()
 {
+    TRACE_LOG("Called");
     digitalWrite(pulleyDirPin, HIGH);
 }
 
 
 bool checkOk()
 {
+    TRACE_LOG("Start");
 	bool _ret = false;
 	int _steps = 0;
 	int _endstop_hit = 0;
@@ -832,5 +913,7 @@ bool checkOk()
 		_ret = false;
 	}
 
+    TRACE_LOG("End, result:");
+    TRACE_LOG(_ret);
 	return _ret;
 }

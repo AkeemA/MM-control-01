@@ -4,12 +4,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <avr/io.h>
-#include "shr16.h"
-#include "spi.h"
-#include "tmc2130.h"
 #include "mmctl.h"
 #include "motion.h"
 #include "Buttons.h"
+
+#ifdef MMCTL_LOG
+#define LOG(x) DBG_PRINT(x)
+#else
+#define LOG(x)
+#endif
+
+#ifdef MMCTL_TRACE
+#define TRACE_LOG(x) DBG_PRINT(x)
+#else
+#define TRACE_LOG(x)
+#endif
 
 int active_extruder = -1;
 int previous_extruder = -1;
@@ -22,32 +31,61 @@ bool isHomed = false;
 
 int check_finda() // output: 1 - there is filament; 0 - no filament
 {
+    TRACE_LOG("Start");
 #ifdef UNSTOCK_FINDA
     int reading = analogRead(findaPin);
     reading = reading - 110;
     if(reading<0) reading = reading * -1;
-    if(reading>4) return 1;
-    else return 0;
+
+    TRACE_LOG("End, result:");
+    if(reading>4)
+    {
+        TRACE_LOG("true)");
+        return 1;
+    }
+    else
+    {
+        TRACE_LOG("false)");
+        return 0;
+    }
 #else
-    return digitalRead(findaPin);
+    int _return = digitalRead(findaPin);
+    TRACE_LOG("End, result:");
+    TRACE_LOG(_return);
+    return _return;
 #endif
 }
 
 int check_extruder_sensor() // output: 1 - there is filament; 0 - no filament
 {
+    TRACE_LOG("Start");
 #ifdef UNSTOCK_pinda
     int reading = analogRead(findaPin);
     reading = reading - 110;
     if(reading<0) reading = reading * -1;
-    if(reading>4) return 1;
-    else return 0;
+
+    TRACE_LOG("End, result:");
+    if(reading>4)
+    {
+        TRACE_LOG("true)");
+        return 1;
+    }
+    else
+    {
+        TRACE_LOG("false)");
+        return 0;
+    }
 #else
-    return digitalRead(extruderSensorPin);
+    int _return = digitalRead(extruderSensorPin);
+    TRACE_LOG("End, result:");
+    TRACE_LOG(_return);
+    return _return;
 #endif
 }
 
 bool feed_filament()
 {
+    LOG("Start");
 	bool _feed = true;
 	bool _loaded = false;
 
@@ -60,10 +98,10 @@ bool feed_filament()
 	do
 	{
 		do_pulley_step();
-		
+
 		_c++;
-		if (_c > 50) { shr16_set_led(2 << 2 * (4 - active_extruder)); };
-		if (_c > 100) { shr16_set_led(0x000); _c = 0; _delay++; };
+        if (_c > 50) { led_on(active_extruder,RED_LED); };
+        if (_c > 100) { all_leds_off(); _c = 0; _delay++; };
 
         if (check_finda() == 1) { _loaded = true; _feed = false; };
 		if (buttonClicked() != Btn::none && _delay > 10) { _loaded = false; _feed = false; }
@@ -82,12 +120,17 @@ bool feed_filament()
 	}
 
 	park_idler(false);
-	shr16_set_led(1 << 2 * (4 - active_extruder));
+    led_on(active_extruder,GREEN_LED);
+
+    TRACE_LOG("End, result:");
+    TRACE_LOG("true");
 	return true;
 }
 
 bool switch_extruder_withSensor(int new_extruder)
 {
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(new_extruder);
 	
 	isPrinting = true;
 	bool _return = false;
@@ -102,7 +145,7 @@ bool switch_extruder_withSensor(int new_extruder)
 	
 	toolChanges++;
 
-	shr16_set_led(2 << 2 * (4 - active_extruder));
+    led_on(active_extruder,RED_LED);
 
 	previous_extruder = active_extruder;
 	active_extruder = new_extruder;
@@ -111,7 +154,7 @@ bool switch_extruder_withSensor(int new_extruder)
 	{
 		if (!isFilamentLoaded)
 		{
-			shr16_set_led(2 << 2 * (4 - active_extruder));
+            led_on(active_extruder,RED_LED);
 			load_filament_withSensor(); // just load filament if not loaded
 			_return = true;
 		}
@@ -125,16 +168,16 @@ bool switch_extruder_withSensor(int new_extruder)
 		if (isFilamentLoaded) { unload_filament_withSensor(); } // unload filament first
 		set_positions(previous_extruder, active_extruder); // move idler and selector to new filament position
 		
-		shr16_set_led(2 << 2 * (4 - active_extruder));
+        led_on(active_extruder,RED_LED);
 		load_filament_withSensor(); // load new filament
 		_return = true;
 	}
 
-	shr16_set_led(0x000);
-	shr16_set_led(1 << 2 * (4 - active_extruder));
+    all_leds_off();
+    led_on(active_extruder,GREEN_LED);
+    TRACE_LOG("End, result:");
+    TRACE_LOG(_return);
 	return _return;
-
-
 }
 
 //! @brief select extruder
@@ -146,11 +189,13 @@ bool switch_extruder_withSensor(int new_extruder)
 //! @return
 bool select_extruder(int new_extruder)
 {
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(new_extruder);
 
 	bool _return = false;
 	if (!isHomed) { home(); }
 
-	shr16_set_led(2 << 2 * (4 - active_extruder));
+    led_on(active_extruder,GREEN_LED);
 
 	int previous_extruder = active_extruder;
 	active_extruder = new_extruder;
@@ -184,29 +229,107 @@ bool select_extruder(int new_extruder)
 		_return = true;
 	}
 
-	shr16_set_led(0x000);
-	shr16_set_led(1 << 2 * (4 - active_extruder));
+    all_leds_off();
+    led_on(active_extruder,RED_LED);
+    TRACE_LOG("End, result:");
+    TRACE_LOG(_return);
 	return _return;
 }
 
 bool service_position()
 {
+    TRACE_LOG("Start");
 	move(0, 600, 0);
 
+    TRACE_LOG("End, result:");
+    TRACE_LOG("true");
 	return true;
+}
+
+
+// LED explanation, you can turn on green or red led
+// [RG]  [RG]  [RG]  [RG]  [RG]
+//  0     1     2     3     4
+//
+// IN STOCK FIRMWARE:
+// shr16_set_led(2 << 2 * (4 - active_extruder)); -> they are counting from right to left (4-active_extruder) -> led_on(active_extruder,green)
+// shr16_set_led(1 << 2 * (4 - active_extruder)); -> they are counting from right to left (4-active_extruder) -> led_on(active_extruder,red)
+// shr16_set_led(0x155);                          -> all_leds_on(green);
+// shr16_set_led(0x2aa);                          -> all_leds_on(red);
+// shr16_set_led(0x000);                          -> all_leds_off();
+
+void led_on(int _no, int color)
+{
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(_no);
+    TRACE_LOG(color);
+
+    if(_no >= 0 && _no < 5 )
+    {
+        // TODO: implement led on function
+    }
+    else
+    {
+        LOG("ERROR: Wrong LED number:");
+        LOG(_no);
+    }
+
+    TRACE_LOG("End");
+}
+
+void led_off(int _no)
+{
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(_no);
+
+    if(_no >= 0 && _no < 5 )
+    {
+        // TODO: implement led off function
+    }
+    else
+    {
+        LOG("ERROR: Wrong LED number:");
+        LOG(_no);
+    }
+
+    TRACE_LOG("End");
+}
+
+void all_leds_on(int color)
+{
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(color);
+
+    // TODO: implement all_leds_off function
+
+    TRACE_LOG("End");
+}
+
+void all_leds_off()
+{
+    TRACE_LOG("Start");
+
+    // TODO: implement all_leds_off function
+
+    TRACE_LOG("End");
 }
 
 void led_blink(int _no)
 {
-	shr16_set_led(1 << 2 * _no);
-	delay(40);
-	shr16_set_led(0x000);
-	delay(20);
-	shr16_set_led(1 << 2 * _no);
-	delay(40);
+    TRACE_LOG("Start, parameters:");
+    TRACE_LOG(_no);
 
-	shr16_set_led(0x000);
-	delay(10);
+    if(_no >= 0 && _no < 5 )
+    {
+        // TODO: implement led_blink function
+    }
+    else
+    {
+        LOG("ERROR: Wrong LED number:");
+        LOG(_no);
+    }
+
+    TRACE_LOG("End");
 }
 
 

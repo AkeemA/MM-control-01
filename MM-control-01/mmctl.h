@@ -27,7 +27,10 @@ extern bool service_position();
 
 extern bool feed_filament();
 
-void led_blink(int _no);
-
+extern void led_blink(int _no);
+extern void led_on(int _no, int color);
+extern void led_off(int _no);
+extern void all_leds_on(int color);
+extern void all_leds_off();
 
 #endif //_MMCTL_H
