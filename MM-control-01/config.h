@@ -7,22 +7,56 @@
 
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
 
+#define EMULATED_LEDS
+#define SERIAL_BUTTONS
+
 #define DEBUG
 
 #ifdef DEBUG
-    #define BTN_LOG
-    #define BTN_TRACE
-    #define MAIN_LOG
-    #define MAIN_TRACE
-    #define MMCTL_LOG
-    #define MMCTL_TRACE
-    #define MOTION_LOG
-    #define MOTION_TRACE
-    #define PSTOR_LOG
-    #define PSTOR_TRACE
-    #define STEPPER_LOG
-    #define STEPPER_TRACE
+  #define BTN_LOG
+  //#define BTN_TRACE
+  #define MAIN_LOG
+  #define MAIN_TRACE
+  //#define MMCTL_LOG
+  //#define MMCTL_TRACE
+  #define MOTION_LOG
+  //#define MOTION_TRACE
+  //#define PSTOR_LOG
+  //#define PSTOR_TRACE
+  //#define STEPPER_LOG
+  //#define STEPPER_TRACE
 #endif
+
+//MOTOR AND STEPPER
+//
+// PULLEY MOTOR
+// SETUP:
+// - A4988: 1/16 microstepping
+// - Chinese NEMA 17 (I guess: 200 steps/rev)
+// - MK8 drive gear: from spec: Effective diameter: 6.7mm; Effective circumference : 21mm
+// Steps for extrude 1 mm of filament:
+// steps = (steps per revolution) * (microstepping) / (effective circumference)
+// x = 200 * 16 / 21 ~= 152
+#define PULLEY_STEPS_MM 152
+
+// IDLER MOTOR
+// SETUP:
+// - A4988: 1/16 microstepping
+// - Chinese NEMA 17 (I guess: 200 steps/rev)
+// - Prusa selector -> one rotation from first bearing to the last
+// Steps to change bearing:
+// ~23 - taken from Chuck Kozlowski config: https://github.com/cskozlowski/mmu2/
+#define IDLER_STEPS_TO_CHANGE 23
+//
+// SELECTOR MOTOR
+// SETUP:
+// - A4988: 1/16 microstepping
+// - Chinese NEMA 17 with integrated lead screw (I guess: 200 steps/rev)
+//   Lead screw: 8mm pitch; 8mm diameter
+// Steps to move for 1 mm:
+// steps = (steps per revolution) * (microstepping) / (pitch)
+// x = 200 * 16 / 8 = 400
+#define SELECTOR_STEPS_MM 400
 
 // Ramps AUX-1 pinout:
 // [5V] [GND]   [D1]     [D0]
@@ -34,7 +68,7 @@
 #define extruderSensorPin 4 // Ramps AUX-1 pin A4
 
 // Uncoment to use unstock finda sensor (in my case 12mm inductive sensor).
-//#define UNSTOCK_FINDA
+#define UNSTOCK_FINDA
 
 // Ramps X-axis
 #define selectorDirPin    55

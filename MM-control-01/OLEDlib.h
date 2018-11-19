@@ -69,50 +69,50 @@ class OLEDlib : public Print{
 public :
   int oled_address;
 
-	byte addressingMode;
-	
-	virtual size_t write(uint8_t);
+  byte addressingMode;
 
-	OLEDlib(){};
-	~OLEDlib(){};
-	void sendCommand(byte command);
-	void sendData(byte Data);
+  virtual size_t write(uint8_t);
 
-	void printChar(char c, byte X=255, byte Y=255);
-	void printSpecialChar(char sChar,byte X=255, byte Y=255);
-	void printString(const char *String, byte X=255, byte Y=255, byte numChar=255);
-	byte printNumber(long n, byte X=255, byte Y=255);
-	byte printNumber(float float_num, byte prec=6, byte Y=255, byte numChar=255);
-	void printBigNumber(const char number, float column=0.0, float page=0.0, byte numChar=255); 
-	void drawBitmap(const byte *bitmaparray, byte X, byte Y, byte width, byte height);
-	void drawBitmap2(const byte *bitmaparray, byte X, byte Y, byte width, byte height);
-	void drawBitmap3(int x, int y, const byte *bitmap, int w, int h, byte color);
+  OLEDlib(){};
+  ~OLEDlib(){};
+  void sendCommand(byte command);
+  void sendData(byte Data);
+
+  void printChar(char c, byte X=255, byte Y=255);
+  void printSpecialChar(char sChar,byte X=255, byte Y=255);
+  void printString(const char *String, byte X=255, byte Y=255, byte numChar=255);
+  byte printNumber(long n, byte X=255, byte Y=255);
+  byte printNumber(float float_num, byte prec=6, byte Y=255, byte numChar=255);
+  void printBigNumber(const char number, float column=0.0, float page=0.0, byte numChar=255);
+  void drawBitmap(const byte *bitmaparray, byte X, byte Y, byte width, byte height);
+  void drawBitmap2(const byte *bitmaparray, byte X, byte Y, byte width, byte height);
+  void drawBitmap3(int x, int y, const byte *bitmap, int w, int h, byte color);
   void drawPixel(int x, int y, byte color);
   void drawGearFrame(const byte *bitmap);
 
-	void init(int address, int width, int height);
-	
-	void setCursorXY(float Column, float Row);
-	void clearDisplay();
-	//void clearPage(byte page);
-	
-	void setNormalDisplay(void);
-	void setInverseDisplay(void);
-	void setPowerOff(void);
-	void setPowerOn(void);
-	void setPageMode(void);
-	void setHorizontalMode(void);
-	void setBrightness(byte Brightness);
-	
-	void scrollRight(byte start, byte end, byte speed);
-	void scrollLeft(byte start, byte end, byte speed);
-	void scrollDiagRight(void);
-	void scrollDiagLeft(void);
-	void setActivateScroll(byte direction, byte startPage, byte endPage, byte scrollSpeed);
-	void setDeactivateScroll(void);
+  void init(int address, int width, int height);
 
- int _width;
- int _height;
+  void setCursorXY(float Column, float Row);
+  void clearDisplay();
+  //void clearPage(byte page);
+
+  void setNormalDisplay(void);
+  void setInverseDisplay(void);
+  void setPowerOff(void);
+  void setPowerOn(void);
+  void setPageMode(void);
+  void setHorizontalMode(void);
+  void setBrightness(byte Brightness);
+
+  void scrollRight(byte start, byte end, byte speed);
+  void scrollLeft(byte start, byte end, byte speed);
+  void scrollDiagRight(void);
+  void scrollDiagLeft(void);
+  void setActivateScroll(byte direction, byte startPage, byte endPage, byte scrollSpeed);
+  void setDeactivateScroll(void);
+
+  int _width;
+  int _height;
 
 };
 

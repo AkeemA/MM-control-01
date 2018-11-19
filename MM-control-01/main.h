@@ -4,12 +4,12 @@
 
 #include <inttypes.h>
 #include "config.h"
-#include <string.h>
 #include <Arduino.h>
 //GENERAL
 #define ENABLE LOW                // stepper motor enable is active low
 #define DISABLE HIGH              // stepper motor disable is active high
 
+#define OFF_LED 0
 #define GREEN_LED 1
 #define RED_LED 2
 
@@ -32,10 +32,10 @@ extern uint8_t sys_signals;
 
 #ifdef DEBUG
 #define DBG_PRINT(...) Serial.print(millis());     \
-    Serial.print(": ");    \
-    Serial.print(__PRETTY_FUNCTION__); \
-    Serial.print(": ");    \
-    Serial.println(__VA_ARGS__)
+  Serial.print(": ");    \
+  Serial.print(__PRETTY_FUNCTION__); \
+  Serial.print(": ");    \
+  Serial.println(__VA_ARGS__)
 #else
 #define DBG_PRINT(x)
 #endif

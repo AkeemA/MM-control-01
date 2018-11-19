@@ -31,28 +31,28 @@ void settings_bowden_length();
 //!
 void settings_select_filament()
 {
-    TRACE_LOG("Start");
-	while (1)
-	{
-		manual_extruder_selector();
+  TRACE_LOG("Start");
+  while (1)
+    {
+      manual_extruder_selector();
 
-		if(Btn::middle == buttonClicked())
+      if(Btn::middle == buttonClicked())
         {
-            led_on(0,GREEN_LED);
-			delay(500);
-			if (Btn::middle == buttonClicked())
-			{
-				if (active_extruder < 5) settings_bowden_length();
-				else
-				{
-					select_extruder(4);
-					select_extruder(0);
-					return;
-				}
-			}
-		}
-	}
-    TRACE_LOG("End");
+          led_on(0,GREEN_LED);
+          delay(500);
+          if (Btn::middle == buttonClicked())
+            {
+              if (active_extruder < 5) settings_bowden_length();
+              else
+                {
+                  select_extruder(4);
+                  select_extruder(0);
+                  return;
+                }
+            }
+        }
+    }
+  TRACE_LOG("End");
 }
 
 //!	@brief Show setup menu
@@ -76,77 +76,77 @@ void settings_select_filament()
 //!
 void setupMenu()
 {
-    TRACE_LOG("Start");
-    all_leds_off();
-	delay(200);
-    all_leds_on(RED_LED);
-	delay(1200);
-    all_leds_off();
-	delay(600);
+  TRACE_LOG("Start");
+  all_leds_off();
+  delay(200);
+  all_leds_on(RED_LED);
+  delay(1200);
+  all_leds_off();
+  delay(600);
 
-	int _menu = 0;
-	bool _exit = false;
-	bool eraseLocked = true;
+  int _menu = 0;
+  bool _exit = false;
+  bool eraseLocked = true;
 
-		
-
-	do
+  do
     {
-        led_on(0,RED_LED);
-        delay(1);
-        led_on(0,GREEN_LED);
-        delay(1);
-        led_on(_menu,GREEN_LED);
-		delay(1);
+      led_on(0,RED_LED);
+      delay(1);
+      led_on(0,GREEN_LED);
+      delay(1);
+      led_on(_menu,GREEN_LED);
+      delay(1);
 
-		switch (buttonClicked())
-		{
-		case Btn::right:
-            if (_menu < 4) { _menu++; delay(800); }
-			break;
-		case Btn::middle:
-				
-			switch (_menu)
-			{
-				case 1:
-					settings_select_filament();
-					_exit = true;
-					break;
-				case 2:
-					if (!eraseLocked)
-					{
-						BowdenLength::eraseAll();
-						_exit = true;
-					}
-					break;
-				case 3: //unlock erase
-					eraseLocked = false;
-					break;
-				case 4: // exit menu
-					_exit = true;
-					break;
-			}
-			break;
-		case Btn::left:
-            if (_menu > 0) { _menu--; delay(800); }
-			break;
-		default:
-			break;
-		}
-		
-	} while (!_exit);
+      switch (buttonClicked())
+        {
+        case Btn::right:
+          if (_menu < 4) { _menu++; delay(800); }
+          break;
+        case Btn::middle:
+
+          switch (_menu)
+            {
+            case 1:
+              //settings_select_filament();
+              LOG("HOME SELECTOR:");
+              home_selector();
+              _exit = true;
+              break;
+            case 2:
+              //if (!eraseLocked)
+              //  {
+              //    BowdenLength::eraseAll();
+                  _exit = true;
+              //  }
+              break;
+            case 3: //unlock erase
+              //eraseLocked = false;
+              break;
+            case 4: // exit menu
+              _exit = true;
+              break;
+            }
+          break;
+        case Btn::left:
+          if (_menu > 0) { _menu--; delay(800); }
+          break;
+        default:
+          break;
+        }
+
+    } while (!_exit);
 
 
-    all_leds_off();
-    delay(400);
-    all_leds_on(GREEN_LED);
-    delay(400);
-    all_leds_off();
-	delay(400);
+  all_leds_off();
+  delay(400);
+  all_leds_on(GREEN_LED);
+  delay(400);
+  all_leds_off();
+  delay(400);
 
-    all_leds_off();
-    led_on(active_extruder,RED_LED);
-    TRACE_LOG("End");
+  all_leds_off();
+  led_on(active_extruder,RED_LED);
+  TRACE_LOG("End");
 }
 
 //! @brief Set bowden length
@@ -171,50 +171,50 @@ void setupMenu()
 //!
 void settings_bowden_length()
 {
-    TRACE_LOG("Start");
-	// load filament above Bondtech gears to check correct length of bowden tube
-	if (!isFilamentLoaded)
-	{
-		BowdenLength bowdenLength;
-		load_filament_withSensor();
+  TRACE_LOG("Start");
+  // load filament above Bondtech gears to check correct length of bowden tube
+  if (!isFilamentLoaded)
+    {
+      BowdenLength bowdenLength;
+      load_filament_withSensor();
 
-		do
-		{
-			switch (buttonClicked())
-			{
-			case Btn::right:
-				if (bowdenLength.decrease())
-				{
-					move(0, 0, -bowdenLength.stepSize);
-					delay(400);
-				}
-				break;
+      do
+        {
+          switch (buttonClicked())
+            {
+            case Btn::right:
+              if (bowdenLength.decrease())
+                {
+                  move(0, 0, -bowdenLength.stepSize);
+                  delay(400);
+                }
+              break;
 
-			case Btn::left:
-				if (bowdenLength.increase())
-				{
-					move(0, 0, bowdenLength.stepSize);
-					delay(400);
-				}
-				break;
-			default:
-				break;
-			}
-
-
-            led_on(0,RED_LED);
-            delay(10);
-            led_on(0,GREEN_LED);
-			delay(10);
-            led_on(3,GREEN_LED);
-			delay(50);
+            case Btn::left:
+              if (bowdenLength.increase())
+                {
+                  move(0, 0, bowdenLength.stepSize);
+                  delay(400);
+                }
+              break;
+            default:
+              break;
+            }
 
 
-		} while (buttonClicked() != Btn::middle);
+          led_on(0,RED_LED);
+          delay(10);
+          led_on(0,GREEN_LED);
+          delay(10);
+          led_on(3,GREEN_LED);
+          delay(50);
 
-		unload_filament_withSensor();
-	}
-    TRACE_LOG("End");
+
+        } while (buttonClicked() != Btn::middle);
+
+      unload_filament_withSensor();
+    }
+  TRACE_LOG("End");
 }
 
 //! @brief Is button pushed?
@@ -222,26 +222,51 @@ void settings_bowden_length()
 //! @return button pushed
 Btn buttonClicked()
 {
-    TRACE_LOG("Called, result:");
-	int raw = analogRead(ButtonPin);
+  TRACE_LOG("Called, result:");
 
-    if (raw < 50)
+#ifdef SERIAL_BUTTONS
+  int serialButton = -0;
+  if(Serial.available() > 0)
     {
-        LOG("right");
-        return Btn::right;
-    }
-    if (raw > 80 && raw < 100)
-    {
-        LOG("middle");
-        return Btn::middle;
-    }
-    if (raw > 160 && raw < 180)
-    {
-        LOG("left");
-        return Btn::left;
+      serialButton = Serial.read();
     }
 
-    LOG("none");
-	return Btn::none;
+  if (serialButton == 'r')
+    {
+      LOG("right");
+      return Btn::right;
+    }
+  if (serialButton == 'm')
+    {
+      LOG("middle");
+      return Btn::middle;
+    }
+  if (serialButton == 'l')
+    {
+      LOG("left");
+      return Btn::left;
+    }
+#else
+  int raw = analogRead(ButtonPin);
+
+  if (raw < 50)
+    {
+      LOG("right");
+      return Btn::right;
+    }
+  if ((raw > 80 && raw < 100))
+    {
+      LOG("middle");
+      return Btn::middle;
+    }
+  if ((raw > 160 && raw < 180))
+    {
+      LOG("left");
+      return Btn::left;
+    }
+  */
+#endif
+  LOG("none");
+  return Btn::none;
 }
 

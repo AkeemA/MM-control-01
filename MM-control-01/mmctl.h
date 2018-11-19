@@ -4,6 +4,7 @@
 
 #include <inttypes.h>
 #include "config.h"
+#include <Arduino.h>
 
 extern bool isPrinting;
 extern bool isHomed;
@@ -27,10 +28,12 @@ extern bool service_position();
 
 extern bool feed_filament();
 
-extern void led_blink(int _no);
+extern void led_blink(int _no, int color);
 extern void led_on(int _no, int color);
 extern void led_off(int _no);
 extern void all_leds_on(int color);
 extern void all_leds_off();
+extern void print_led_frame();
+String led_as_char(int _no);
 
 #endif //_MMCTL_H

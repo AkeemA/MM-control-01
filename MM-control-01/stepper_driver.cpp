@@ -16,46 +16,46 @@
 
 void driver_enable_motor(uint8_t motor)
 {
-    TRACE_LOG("Called: driver_enable_motor(), parameter:");
-    TRACE_LOG(motor);
-    digitalWrite(motor, ENABLE);
+  TRACE_LOG("Called: driver_enable_motor(), parameter:");
+  TRACE_LOG(motor);
+  digitalWrite(motor, ENABLE);
 }
 
 void driver_enable_all()
 {
-    TRACE_LOG("Called: driver_enable_all()");
-    digitalWrite(idlerEnablePin, ENABLE);
-    digitalWrite(pulleyEnablePin, ENABLE);
-    digitalWrite(selectorEnablePin, ENABLE);
+  TRACE_LOG("Called: driver_enable_all()");
+  digitalWrite(idlerEnablePin, ENABLE);
+  digitalWrite(pulleyEnablePin, ENABLE);
+  digitalWrite(selectorEnablePin, ENABLE);
 }
 
 void driver_disable_motor(uint8_t motor)
 {
-    TRACE_LOG("Called: driver_disable_motor(), parameter:");
-    TRACE_LOG(motor);
-    digitalWrite(motor, DISABLE);
+  TRACE_LOG("Called: driver_disable_motor(), parameter:");
+  TRACE_LOG(motor);
+  digitalWrite(motor, DISABLE);
 }
 
 void driver_disable_all()
 {
-    TRACE_LOG("Called: driver_disable_all()");
-    digitalWrite(idlerEnablePin, DISABLE);
-    digitalWrite(pulleyEnablePin, DISABLE);
-    digitalWrite(selectorEnablePin, DISABLE);
+  TRACE_LOG("Called: driver_disable_all()");
+  digitalWrite(idlerEnablePin, DISABLE);
+  digitalWrite(pulleyEnablePin, DISABLE);
+  digitalWrite(selectorEnablePin, DISABLE);
 }
 
 void driver_init()
 {
-    TRACE_LOG("Called: driver_init()");
-    pinMode(idlerDirPin, OUTPUT);
-    pinMode(idlerStepPin, OUTPUT);
-    pinMode(idlerEnablePin, OUTPUT);
+  TRACE_LOG("Called: driver_init()");
+  pinMode(idlerDirPin, OUTPUT);
+  pinMode(idlerStepPin, OUTPUT);
+  pinMode(idlerEnablePin, OUTPUT);
 
-    pinMode(pulleyEnablePin, OUTPUT);
-    pinMode(pulleyDirPin, OUTPUT);
-    pinMode(pulleyStepPin, OUTPUT);
+  pinMode(pulleyEnablePin, OUTPUT);
+  pinMode(pulleyDirPin, OUTPUT);
+  pinMode(pulleyStepPin, OUTPUT);
 
-    pinMode(selectorEnablePin, OUTPUT);
-    pinMode(selectorDirPin, OUTPUT);
-    pinMode(selectorStepPin, OUTPUT);
+  pinMode(selectorEnablePin, OUTPUT);
+  pinMode(selectorDirPin, OUTPUT);
+  pinMode(selectorStepPin, OUTPUT);
 }
