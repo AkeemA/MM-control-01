@@ -7,19 +7,21 @@
 
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
 
-#define EMULATED_LEDS
-#define SERIAL_BUTTONS
+//#define EMULATED_LEDS
+//#define SERIAL_BUTTONS
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
-  #define BTN_LOG
+  #define DEBUG_MENU
+
+  //#define BTN_LOG
   //#define BTN_TRACE
-  #define MAIN_LOG
-  #define MAIN_TRACE
+  //#define MAIN_LOG
+  //#define MAIN_TRACE
   //#define MMCTL_LOG
   //#define MMCTL_TRACE
-  #define MOTION_LOG
+  //#define MOTION_LOG
   //#define MOTION_TRACE
   //#define PSTOR_LOG
   //#define PSTOR_TRACE
@@ -68,7 +70,7 @@
 #define extruderSensorPin 4 // Ramps AUX-1 pin A4
 
 // Uncoment to use unstock finda sensor (in my case 12mm inductive sensor).
-#define UNSTOCK_FINDA
+//#define UNSTOCK_FINDA
 
 // Ramps X-axis
 #define selectorDirPin    55

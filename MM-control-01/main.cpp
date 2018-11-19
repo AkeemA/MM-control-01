@@ -64,7 +64,7 @@ void setup()
 {
   LCD_init();
   print_led_frame();
-  led_blink(0,GREEN_LED);
+  led_blink(4,GREEN_LED);
 
   Serial.begin(115200);
   TRACE_LOG("Start");
@@ -73,24 +73,26 @@ void setup()
   stdout = uart1io; // stdout = uart1
   fprintf_P(uart_com, PSTR("start\n")); //startup message
 
-  led_blink(1,GREEN_LED);
+  led_blink(3,GREEN_LED);
 
   pinMode(findaPin, INPUT);                        // pinda Filament sensor
   led_blink(2,GREEN_LED);
 
   //pinMode(filamentSwitch, INPUT);
-  led_blink(3,GREEN_LED);
+  led_blink(1,GREEN_LED);
 
   driver_init();
-  led_blink(4,GREEN_LED);
+  led_blink(0,GREEN_LED);
 
   all_leds_off();
 
-  LOG("Init pulley");
-  //init_Pulley();
+#ifdef DEBUG_MENU
+  debugMenu();
+#endif
+
+  init_Pulley();
 
   // if FINDA is sensing filament do not home
-  /*
   while (check_finda() == 1)
     {
       LOG("if FINDA is sensing filament do not home");
@@ -109,16 +111,13 @@ void setup()
           delay(300);
         }
     }
-  */
-  LOG("home");
-  //home();
-  LOG("outfrom home");
-  
+  home();
+
   // check if to goto the settings menu
-  //if (buttonClicked() == Btn::middle)
-  //  {
+  if (buttonClicked() == Btn::middle)
+    {
       setupMenu();
-  //  }
+    }
 
   LCD_print(4,2,"Fake MMU2");
   LCD_print(4,3," Welcome!");

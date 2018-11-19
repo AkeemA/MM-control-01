@@ -32,7 +32,9 @@ void move_proportional(int _idler, int _selector);
 void eject_filament(int extruder);
 void recover_after_eject();
 
-
+unsigned long int getSelector_steps_for_mm();
+unsigned long int getIdler_steps_for_position();
+unsigned long int getPulley_steps_for_mm();
 
 #endif
 

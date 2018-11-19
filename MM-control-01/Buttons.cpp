@@ -78,13 +78,13 @@ void setupMenu()
 {
   TRACE_LOG("Start");
   all_leds_off();
-  delay(200);
+  delay(200);do_idler_step
   all_leds_on(RED_LED);
   delay(1200);
   all_leds_off();
   delay(600);
 
-  int _menu = 0;
+  int _menu = 4;
   bool _exit = false;
   bool eraseLocked = true;
 
@@ -106,29 +106,119 @@ void setupMenu()
 
           switch (_menu)
             {
-            case 1:
-              //settings_select_filament();
-              LOG("HOME SELECTOR:");
-              home_selector();
+            case 3:
+              settings_select_filament();
               _exit = true;
               break;
             case 2:
-              //if (!eraseLocked)
-              //  {
-              //    BowdenLength::eraseAll();
+              if (!eraseLocked)
+                {
+                  BowdenLength::eraseAll();
                   _exit = true;
-              //  }
+                }
               break;
-            case 3: //unlock erase
-              //eraseLocked = false;
+            case 1: //unlock erase
+              eraseLocked = false;
               break;
-            case 4: // exit menu
+            case 0: // exit menu
               _exit = true;
               break;
             }
           break;
         case Btn::left:
-          if (_menu > 0) { _menu--; delay(800); }
+          if (_menu > 1) { _menu--; delay(800); }
+          break;
+        default:
+          break;
+        }
+
+    } while (!_exit);
+
+
+  all_leds_off();
+  delay(400);
+  all_leds_on(GREEN_LED);
+  delay(400);
+  all_leds_off();
+  delay(400);
+
+  all_leds_off();
+  led_on(active_extruder,RED_LED);
+  TRACE_LOG("End");
+}
+
+
+//!	@brief Show development menu
+//!
+//! Items are selected by left and right buttons, activated by middle button.
+//!
+//! LED indication of states
+//!
+//! RG | RG | RG | RG | RG | meaning
+//! -- | -- | -- | -- | -- | ------------------------
+//! 11 | 00 | 00 | 00 | 01 | initial state, no action
+//! 11 | 00 | 00 | 01 | 00 | home selector
+//! 11 | 00 | 01 | 00 | 00 | home idler
+//! 11 | 01 | 00 | 00 | 00 | move pulley for 20 mm
+//! 11 | 00 | 00 | 00 | 00 | exit setup menu
+//!
+//! @n R - Red LED
+//! @n G - Green LED
+//! @n 1 - active
+//! @n 0 - inactive
+//!
+// Development menu to test seperated parts of code
+void debugMenu()
+{
+  TRACE_LOG("Start");
+  all_leds_off();
+  delay(200);
+  all_leds_on(RED_LED);
+  delay(1200);
+  all_leds_off();
+  delay(600);
+
+  int _menu = 4;
+  bool _exit = false;
+  bool eraseLocked = true;
+
+  do
+    {
+      led_on(0,RED_LED);
+      delay(1);
+      led_on(0,GREEN_LED);
+      delay(1);
+      led_on(_menu,GREEN_LED);
+      delay(1);
+
+      switch (buttonClicked())
+        {
+        case Btn::right:
+          if (_menu < 4) { led_off(_menu); _menu++; delay(800); }
+          break;
+        case Btn::middle:
+
+          switch (_menu)
+            {
+            case 3:
+              LOG("homing selector motor");
+              home_selector();
+              break;
+            case 2:
+              LOG("Homing idler motor");
+              home_idler();
+              break;
+            case 1:
+              LOG("Moving pulley motor for 20 mm");
+              move(0,0,20*getPulley_steps_for_mm());
+              break;
+            case 0: // exit menu
+              _exit = true;
+              break;
+            }
+          break;
+        case Btn::left:
+          if (_menu > 1) { led_off(_menu); _menu--; delay(800); }
           break;
         default:
           break;
