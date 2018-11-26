@@ -12,6 +12,7 @@
 #include <avr/wdt.h>
 #include "permanent_storage.h"
 #include "version.h"
+#include "display.h"
 
 #ifdef MAIN_LOG
 #define LOG(x) DBG_PRINT(x)

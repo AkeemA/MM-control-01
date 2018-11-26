@@ -15,25 +15,12 @@ extern int previous_extruder;
 extern bool isFilamentLoaded; // Filament loaded just above BondTech gear in MK3 extruder
 extern bool isIdlerParked;
 
-extern int check_finda();
-extern int check_extruder_sensor();
+int check_finda();
+int check_extruder_sensor();
 
-extern bool home_idler();
-extern bool home_selector();
-
-extern bool switch_extruder_withSensor(int new_extruder);
-
-extern bool select_extruder(int new_extruder);
-extern bool service_position();
-
-extern bool feed_filament();
-
-extern void led_blink(int _no, int color);
-extern void led_on(int _no, int color);
-extern void led_off(int _no);
-extern void all_leds_on(int color);
-extern void all_leds_off();
-extern void print_led_frame();
-String led_as_char(int _no);
+bool feed_filament();
+bool switch_extruder_withSensor(int new_extruder);
+bool select_extruder(int new_extruder);
+bool service_position();
 
 #endif //_MMCTL_H

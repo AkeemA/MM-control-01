@@ -8,6 +8,18 @@
 //GENERAL
 #define ENABLE LOW                // stepper motor enable is active low
 #define DISABLE HIGH              // stepper motor disable is active high
+#define PUSH 1                    // Value used to set direction for pulley motor
+#define PULL -1                   // Value used to set direction for pulley motor
+#define RIGHT 1                    // Value used to set direction for selector motor
+#define LEFT -1                  // Value used to set direction for selector motor
+#define UP 1                      // Value used to set direction for idler motor
+#define DOWN -1                   // Value used to set direction for idler motor
+
+#define EMPTY_SPEED -9191
+
+#define NO_SENSOR 0
+#define FINDA_SENSOR 1
+#define EXTRUDER_SENSOR 2
 
 #define OFF_LED 0
 #define GREEN_LED 1

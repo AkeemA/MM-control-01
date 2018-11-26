@@ -7,7 +7,7 @@
 
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
 
-//#define EMULATED_LEDS
+#define EMULATED_LEDS
 //#define SERIAL_BUTTONS
 
 //#define DEBUG
@@ -45,7 +45,7 @@
 // SETUP:
 // - A4988: 1/16 microstepping
 // - Chinese NEMA 17 (I guess: 200 steps/rev)
-// - Prusa selector -> one rotation from first bearing to the last
+// - Prusa selector -> one rotation from first bearing to the next
 // Steps to change bearing:
 // ~23 - taken from Chuck Kozlowski config: https://github.com/cskozlowski/mmu2/
 #define IDLER_STEPS_TO_CHANGE 23
@@ -72,20 +72,31 @@
 // Uncoment to use unstock finda sensor (in my case 12mm inductive sensor).
 //#define UNSTOCK_FINDA
 
+
+#define DIR_PIN 0
+#define STEP_PIN 1
+#define ENABLE_PIN 2
+#define SPEED_VALUE 3
 // Ramps X-axis
 #define selectorDirPin    55
 #define selectorStepPin   54
 #define selectorEnablePin 38
+#define selectorSpeed     2000
+const int selectorMotor[4] = { selectorDirPin, selectorStepPin, selectorEnablePin,  selectorSpeed };
 
 // Ramps Y-axis
 #define idlerDirPin       61
 #define idlerStepPin      60
 #define idlerEnablePin    56
+#define idlerSpeed        2000
+const int idlerMotor[4] = { idlerDirPin, idlerStepPin, idlerEnablePin, idlerSpeed };
 
 // Ramps Z-axis
 #define pulleyDirPin      48
 #define pulleyStepPin     46
 #define pulleyEnablePin   62
+#define pulleySpeed       2000
+const int pulleyMotor[4] = { pulleyDirPin, pulleyStepPin, pulleyEnablePin,  pulleySpeed };
 
 // ###### END - WOJCIECH KOPROWSKI CONF
 

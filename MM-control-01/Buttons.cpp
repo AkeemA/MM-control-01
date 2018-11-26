@@ -3,7 +3,10 @@
 #include "Buttons.h"
 #include "mmctl.h"
 #include "motion.h"
+#include "stepper_driver.h"
+#include "display.h"
 #include "permanent_storage.h"
+#include "physical_des.h"
 #include "main.h"
 
 #ifdef BTN_LOG
@@ -78,7 +81,7 @@ void setupMenu()
 {
   TRACE_LOG("Start");
   all_leds_off();
-  delay(200);do_idler_step
+  delay(200);
   all_leds_on(RED_LED);
   delay(1200);
   all_leds_off();
@@ -210,7 +213,7 @@ void debugMenu()
               break;
             case 1:
               LOG("Moving pulley motor for 20 mm");
-              move(0,0,20*getPulley_steps_for_mm());
+              moveMotor(pulleyMotor, 20*getPulley_steps_for_mm());
               break;
             case 0: // exit menu
               _exit = true;
@@ -275,7 +278,7 @@ void settings_bowden_length()
             case Btn::right:
               if (bowdenLength.decrease())
                 {
-                  move(0, 0, -bowdenLength.stepSize);
+                  moveMotor(pulleyMotor, -bowdenLength.stepSize);
                   delay(400);
                 }
               break;
@@ -283,7 +286,7 @@ void settings_bowden_length()
             case Btn::left:
               if (bowdenLength.increase())
                 {
-                  move(0, 0, bowdenLength.stepSize);
+                  moveMotor(pulleyMotor, bowdenLength.stepSize);
                   delay(400);
                 }
               break;
@@ -354,7 +357,6 @@ Btn buttonClicked()
       LOG("left");
       return Btn::left;
     }
-  */
 #endif
   LOG("none");
   return Btn::none;
