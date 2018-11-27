@@ -53,7 +53,7 @@ int getIdlerDistance(int _current_extruder, int _next_extruder)
     return ((_current_extruder - _next_extruder) * getIdler_steps_for_position());
 }
 
-//! @brief Compute steps for selector needed to change filament
+//! @brief Compute steps for selector nehoeded to change filament
 //! @par _current_extruder Currently selected extruder
 //! @par _next_extruder Extruder to be selected
 //! @return selector steps
@@ -512,8 +512,7 @@ bool home_selector()
   while (i < 76) // length of selector TODO: get it from physical description
   {
     if(dir == -1) dir = 1; else dir = -1;
-    //moveMotor(selectorMotor, 1*getSelector_steps_for_mm());
-    moveMotor(pulleyMotor, 1*getSelector_steps_for_mm());
+    moveMotor(selectorMotor, 1*getSelector_steps_for_mm());
     i += 4;
   }
 
