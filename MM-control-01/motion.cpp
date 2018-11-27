@@ -30,7 +30,6 @@ const int idler_steps_after_homing = -130;
 const int selector_steps = 2790/4;
 const int idler_steps = 1420 / 4;    // 2 msteps = 180 / 4
 const int idler_parking_steps = (idler_steps / 2) + 40;  // 40
-#define STEPS_FOR_MM 500 // TODO: CHECK THE REAL VALUE / CONFIGURE
 
 const int bowden_length = 1000;
 // endstop to tube  - 30 mm, 550 steps
@@ -45,14 +44,32 @@ void cut_filament()
   TRACE_LOG("Called: cut_filament");
 }
 
+//! @brief Compute steps for idler needed to change filament
+//! @par _current_extruder Currently selected extruder
+//! @par _next_extruder Extruder to be selected
+//! @return idler steps
+int getIdlerDistance(int _current_extruder, int _next_extruder)
+{
+    return ((_current_extruder - _next_extruder) * getIdler_steps_for_position());
+}
+
+//! @brief Compute steps for selector needed to change filament
+//! @par _current_extruder Currently selected extruder
+//! @par _next_extruder Extruder to be selected
+//! @return selector steps
+int getSelectorDistance(int _current_extruder, int _next_extruder)
+{
+    return (((_current_extruder - _next_extruder) * getSelector_steps_for_mm()) * -1);
+}
+
 void set_positions(int _current_extruder, int _next_extruder)
 {
   TRACE_LOG("Start, parameters:");
   TRACE_LOG(_current_extruder);
   TRACE_LOG(_next_extruder);
   // steps to move to new position of idler and selector
-  int _selector_steps = ((_current_extruder - _next_extruder) * selector_steps) * -1;
-  int _idler_steps = (_current_extruder - _next_extruder) * idler_steps;
+  int _selector_steps = getSelectorDistance(_current_extruder, _next_extruder);
+  int _idler_steps = getIdlerDistance(_current_extruder, _next_extruder);
 
   // move both to new position
   move_proportional(_idler_steps, _selector_steps);
@@ -66,14 +83,14 @@ void eject_filament(int extruder)
   //move selector sideways and push filament forward little bit, so user can catch it, unpark idler at the end to user can pull filament out
   int selector_position = 0;
 
-
   int8_t selector_offset_for_eject = 0;
   int8_t idler_offset_for_eject = 0;
 
   //if there is still filament detected by PINDA unload it first
   if (isFilamentLoaded)  unload_filament_withSensor();
 
-  //??driver_enable_motor(idlerEnablePin);
+  select_extruder(active_extruder); //Enforce home idler and selector.
+
   if (isIdlerParked) park_idler(true); // if idler is in parked position un-park him get in contact with filament
 
 
@@ -91,7 +108,6 @@ void eject_filament(int extruder)
   idler_steps_for_eject = idler_offset_for_eject * idler_steps;
 
   //move selector and idler to new position
-  //??driver_enable_motor(selectorEnablePin);
   move_proportional(idler_steps_for_eject, selector_steps_for_eject);
 
   //push filament forward
@@ -99,7 +115,6 @@ void eject_filament(int extruder)
 
   //unpark idler so user can easily remove filament
   park_idler(false);
-  //??driver_disable_all();
   TRACE_LOG("End");
 }
 
@@ -110,15 +125,13 @@ void recover_after_eject()
   TRACE_LOG("End");
 }
 
-
 void load_filament_withSensor()
 {
   TRACE_LOG("Start");
 
-  //??driver_enable_motor(idlerEnablePin);
+  FilamentLoaded::set(active_extruder);
   if (isIdlerParked) park_idler(true); // if idler is in parked position un-park him get in contact with filament
 
-  //??driver_enable_motor(pulleyEnablePin);
 
   // load filament until FINDA senses end of the filament, means correctly loaded into the selector
   // we can expect something like 570 steps to get in sensor
@@ -206,26 +219,22 @@ void load_filament_withSensor()
       // nothing
     }
 
-  {
+  float _speed = 4500;
+  _loadSteps = getLength_finda_extSens(); // lengt between 2 sensors
+  int i = 0;
+  do
+    {
+      do_step(pulleyMotor);
+      i++;
+      if (i > round(_loadSteps*0.001) && i < round(_loadSteps*0.45) && _speed > 650) _speed = _speed - 4;
+      if (i > round(_loadSteps*0.01) && i < round(_loadSteps*0.45) && _speed > 650) _speed = _speed - 1;
+      if (i > round(_loadSteps*0.9) && _speed < 3000) _speed = _speed + 2;
+      delayMicroseconds(_speed);
+    } while (check_extruder_sensor() == 0 && i < _loadSteps);
 
-    float _speed = 4500;
-    _loadSteps = getLength_finda_extSens(); // lengt between 2 sensors
-    int i = 0;
-    do
-      {
-        do_step(pulleyMotor);
-        i++;
-        if (i > round(_loadSteps*0.001) && i < round(_loadSteps*0.45) && _speed > 650) _speed = _speed - 4;
-        if (i > round(_loadSteps*0.01) && i < round(_loadSteps*0.45) && _speed > 650) _speed = _speed - 1;
-        if (i > round(_loadSteps*0.9) && _speed < 3000) _speed = _speed + 2;
-        delayMicroseconds(_speed);
-      } while (check_extruder_sensor() == 0 && i < _loadSteps);
+  _loadSteps = getLength_extSens_BondTech();
+  moveMotor(pulleyMotor, _loadSteps, 3000);
 
-    _loadSteps = getLength_extSens_BondTech();
-    moveMotor(pulleyMotor, _loadSteps, 3000);
-  }
-
-  //??driver_disable_all();
   isFilamentLoaded = true;  // filament loaded
   TRACE_LOG("End");
 }
@@ -237,29 +246,21 @@ void unload_filament_withSensor()
 
   if (isIdlerParked) park_idler(true); // if idler is in parked position un-park him get in contact with filament
 
-  set_direction(pulleyMotor, PULL);
-
   float _speed = 2000;
-  float _first_point = 1800;
-  float _second_point = 8700;
   int _endstop_hit = 0;
 
   // I stage: unload from hotend to filament sensor on top of the mk3 extruder
   // Speed of unload is 2000 microseconds/step = 2 miliseconds/step try for 2s, if after that sensor will still sense filament we will raise the error
-  int _unloadSteps = getLength_extSens_BondTech() + 10 * getPulley_steps_for_mm(); // move for BONDTECH gear --- extruder sensor distance + additional 10 mm
-  while(check_extruder_sensor() == 1 && _unloadSteps > 0)
-    {
-      do_step(pulleyMotor);
-      _unloadSteps--;
-      delayMicroseconds(_speed);
-    }
+  int _unloadSteps = getLength_extSens_BondTech() + 10 * getPulley_steps_for_mm() * -1; // move for BONDTECH gear --- extruder sensor distance + additional 10 mm
 
+  moveMotorWithSensor(pulleyMotor, _unloadSteps, EXTRUDER_SENSOR, _speed);
 
   if(check_extruder_sensor() == 0) // Check if unloading from hotend to extruder filamend sensor was successful, if yes extrude to FINDA sensor on MMU2
     {
 
       // II stage: filament reached extruder sensor -> unload until FINDA senses end of the filament
       _unloadSteps = getLength_finda_extSens() + 20 * getPulley_steps_for_mm(); // move for BONDTECH gear --- extruder sensor distance + additional 20 mm
+      set_direction(pulleyMotor, PULL);
       unsigned long i = _unloadSteps;
       do
         {
@@ -271,7 +272,7 @@ void unload_filament_withSensor()
           if (i < round(_unloadSteps*0.90) && i > round(_unloadSteps*0.50) && _speed > 550) _speed = _speed - 2;
 
           delayMicroseconds(_speed);
-          if (check_finda() == 0 && i < round(_unloadSteps*0.25)) _endstop_hit++;
+          if (check_finda() == 0) _endstop_hit++;
 
         } while (_endstop_hit < 100 && i > 0);
 
@@ -360,11 +361,23 @@ void unload_filament_withSensor()
       moveMotor(pulleyMotor, -450, _speed); // TODO: change to the steps per mm and check speed
     }
   park_idler(false);
-  //??driver_disable_all();
   isFilamentLoaded = false; // filament unloaded
   TRACE_LOG("End");
 }
 
+//! @brief Do 320 pulley steps slower and 450 steps faster with decreasing motor current.
+//!
+//! @n d = 6.3 mm        pulley diameter
+//! @n c = pi * d        pulley circumference
+//! @n FSPR = 200        full steps per revolution (stepper motor constant) (1.8 deg/step)
+//! @n mres = 2          microstep resolution (uint8_t __res(AX_PUL))
+//! @n SPR = FSPR * mres steps per revolution
+//! @n T1 = 2600 us      step period first segment
+//! @n T2 = 2200 us      step period second segment
+//! @n v1 = (1 / T1) / SPR * c = 19.02 mm/s  speed first segment
+//! @n s1 =   320    / SPR * c = 15.80 mm    distance first segment
+//! @n v2 = (1 / T2) / SPR * c = 22.48 mm/s  speed second segment
+//! @n s2 =   450    / SPR * c = 22.26 mm    distance second segment
 void load_filament_inPrinter() // TODO: think about changing it also to configurable value to be independedn from motor steps/rev
 {
   TRACE_LOG("Start");
@@ -385,12 +398,14 @@ void init_Pulley()
 {
   TRACE_LOG("Start");
   int led = -1;
+
+	int _speed = 3000;
   
   set_direction(pulleyMotor, PUSH);
   for (int i = 50; i > 0; i--)
     {
       do_step(pulleyMotor);
-      delayMicroseconds(pulleyMotor[SPEED_VALUE]);
+      delayMicroseconds(_speed);
       led = 4-(int)(i/10);
       if(led >=0) led_on(4-(int)(i/10),RED_LED);
     }
@@ -400,7 +415,7 @@ void init_Pulley()
   for (int i = 50; i > 0; i--)
     {
       do_step(pulleyMotor);
-      delayMicroseconds(pulleyMotor[SPEED_VALUE]);
+      delayMicroseconds(_speed);
       led = 4-(int)(i/10);
       if(led >=0) led_on(4-(int)(i/10),RED_LED);
     }
@@ -426,29 +441,26 @@ void park_idler(bool _unpark)
   TRACE_LOG("End");
 }
 
-void home()
+//! @brief home idler
+//!
+//! @par toLastFilament
+//!   - true
+//! Move idler to previously loaded filament and disengage. Returns true.
+//! Does nothing if last filament used is not known and returns false.
+//!   - false (default)
+//! Move idler to filament 0 and disengage. Returns true.
+//!
+//! @retval true Succeeded
+//! @retval false Failed
+bool home_idler(bool toLastFilament)
 {
   TRACE_LOG("Start");
-  // home both idler and selector
-  all_leds_off();
-  home_idler();
-  home_selector();
-  all_leds_on(GREEN_LED);
-  moveMotor(idlerMotor, idler_steps_after_homing);
-  moveMotor(selectorMotor, selector_steps_after_homing);
-  active_extruder = 0;
 
-  park_idler(false);
-  all_leds_off();
-  isFilamentLoaded = false;
-  led_on(active_extruder,RED_LED);
-  isHomed = true;
-  TRACE_LOG("End");
-}
-
-bool home_idler()
-{
-  TRACE_LOG("Start");
+  uint8_t filament = 0; //Not needed, just to suppress compiler warning.
+  if(toLastFilament)
+  {
+    if(!FilamentLoaded::get(filament)) return false;
+  }
 
   int i = 0;
   int dir = 1;
@@ -459,6 +471,15 @@ bool home_idler()
     i += 2;
   }
 
+  moveMotor(idlerMotor, idler_steps_after_homing);
+
+  if (toLastFilament)
+    {
+      int idlerSteps = getIdlerDistance(0,filament);
+      move_proportional(idlerSteps, 0);
+    }
+
+	park_idler(false);
   TRACE_LOG("End, result:");
   TRACE_LOG("true");
   return true;
@@ -467,6 +488,24 @@ bool home_idler()
 bool home_selector()
 {
   TRACE_LOG("Start");
+
+  while (check_finda() == 1)
+  {
+    while (Btn::right != buttonClicked())
+    {
+      if (check_finda() == 1)
+      {
+        all_leds_on(RED_LED);
+      }
+      else
+      {
+        all_leds_on(GREEN_LED);
+      }
+      delay(300);
+      all_leds_off();
+      delay(300);
+    }
+  }
 
   int i = 0;
   int dir = 1;
@@ -477,9 +516,32 @@ bool home_selector()
     i += 4;
   }
 
+  moveMotor(selectorMotor, selector_steps_after_homing); // move to initial position
+
   TRACE_LOG("End, result:");
   TRACE_LOG(true);
   return true;
+}
+
+void home()
+{
+  TRACE_LOG("Start");
+
+  all_leds_off();
+  
+  // home both idler and selector
+  home_idler(false);
+  home_selector();
+
+  all_leds_on(GREEN_LED);
+  delay(100);
+  all_leds_off();
+
+  isFilamentLoaded = false;
+  led_on(active_extruder,RED_LED);
+  isHomed = true;
+
+  TRACE_LOG("End");
 }
 
 bool checkOk()

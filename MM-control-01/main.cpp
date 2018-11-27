@@ -63,6 +63,7 @@ void process_commands(FILE* inout);
 //! @n b - blinking
 void setup()
 {
+  permanentStorageInit();
   LCD_init();
   print_led_frame();
   led_blink(4,GREEN_LED);
@@ -93,31 +94,17 @@ void setup()
 
   init_Pulley();
 
-  // if FINDA is sensing filament do not home
-  while (check_finda() == 1)
-    {
-      LOG("if FINDA is sensing filament do not home");
-      while (Btn::right != buttonClicked())
-        {
-          if (check_finda() == 1)
-            {
-              all_leds_on(RED_LED);
-            }
-          else
-            {
-              all_leds_on(GREEN_LED);
-            }
-          delay(300);
-          all_leds_off();
-          delay(300);
-        }
-    }
-  home();
+  home_idler(true);
 
   // check if to goto the settings menu
   if (buttonClicked() == Btn::middle)
     {
       setupMenu();
+    }
+
+  if (check_finda() == 1) 
+    {
+      isFilamentLoaded = true;
     }
 
   LCD_print(4,2,"Fake MMU2");
@@ -223,6 +210,10 @@ void loop()
           delay(500);
           if (Btn::middle == buttonClicked())
             {
+              if (!isHomed)
+                { 
+                  home(); 
+                }
               feed_filament();
             }
         }

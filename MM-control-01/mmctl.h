@@ -18,9 +18,8 @@ extern bool isIdlerParked;
 int check_finda();
 int check_extruder_sensor();
 
+void switch_extruder_withSensor(int new_extruder);
+void select_extruder(int new_extruder);
 bool feed_filament();
-bool switch_extruder_withSensor(int new_extruder);
-bool select_extruder(int new_extruder);
-bool service_position();
 
 #endif //_MMCTL_H

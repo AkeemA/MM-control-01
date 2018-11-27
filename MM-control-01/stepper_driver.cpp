@@ -80,13 +80,13 @@ void move_proportional(int _idler, int _selector) // TODO: check how to refactor
   _idler = set_direction(idlerMotor, _idler);
   _selector = set_direction(selectorMotor, _selector);
 
-  float _idler_step = (float)_idler/(float)_selector;
+  float _idler_step = _selector ? (float)_idler/(float)_selector : 1.0;
   float _idler_pos = 0;
   int _speed = 2500;
   int _start = _selector - 250;
   int _end = 250;
 
-  do
+  while (_selector != 0 || _idler != 0 )
     {
       if (_idler_pos >= 1)
         {
@@ -116,7 +116,7 @@ void move_proportional(int _idler, int _selector) // TODO: check how to refactor
       if (_speed > 900 && _selector > _start) { _speed = _speed - 10; }
       if (_speed < 2500 && _selector < _end) { _speed = _speed + 10; }
 
-    } while (_selector != 0 || _idler != 0 );
+    }
 
   TRACE_LOG("End");
 }

@@ -45,10 +45,10 @@ void settings_select_filament()
           delay(500);
           if (Btn::middle == buttonClicked())
             {
+              if (!isHomed) home();
               if (active_extruder < 5) settings_bowden_length();
               else
                 {
-                  select_extruder(4);
                   select_extruder(0);
                   return;
                 }
@@ -116,7 +116,7 @@ void setupMenu()
             case 2:
               if (!eraseLocked)
                 {
-                  BowdenLength::eraseAll();
+                  eepromEraseAll();
                   _exit = true;
                 }
               break;
@@ -209,7 +209,7 @@ void debugMenu()
               break;
             case 2:
               LOG("Homing idler motor");
-              home_idler();
+              home_idler(false);
               break;
             case 1:
               LOG("Moving pulley motor for 20 mm");

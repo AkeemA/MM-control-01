@@ -23,7 +23,7 @@
 #define TRACE_LOG(x)
 #endif
 
-int active_extruder = -1;
+int active_extruder = 0;
 int previous_extruder = -1;
 bool isFilamentLoaded = false;
 bool isIdlerParked = false;
@@ -125,21 +125,26 @@ bool feed_filament()
   return true;
 }
 
-bool switch_extruder_withSensor(int new_extruder)
+//! @brief Change filament
+//!
+//! Unload filament, if different filament than requested is currently loaded,
+//! or homing wasn't done yet.
+//! Home if not homed.
+//! Switch to requested filament (this does nothing if requested filament is currently selected).
+//! Load filament if not loaded.
+//! @par new_extruder Filament to be selected
+void switch_extruder_withSensor(int new_extruder)
 {
   TRACE_LOG("Start, parameters:");
   TRACE_LOG(new_extruder);
 
   isPrinting = true;
-  bool _return = false;
-  if (!isHomed) { home(); }
 
   if (active_extruder == 5)
     {
       moveMotor(selectorMotor, -700);
       active_extruder = 4;
     }
-
 
   toolChanges++;
 
@@ -148,99 +153,71 @@ bool switch_extruder_withSensor(int new_extruder)
   previous_extruder = active_extruder;
   active_extruder = new_extruder;
 
-  if (previous_extruder == active_extruder)
+  if (isFilamentLoaded && ((previous_extruder != active_extruder) || !isHomed))
     {
-      if (!isFilamentLoaded)
-        {
-          led_on(active_extruder,RED_LED);
-          load_filament_withSensor(); // just load filament if not loaded
-          _return = true;
-        }
-      else
-        {
-          _return = false;  // nothing really happened
-        }
+      unload_filament_withSensor();
     }
-  else
-    {
-      if (isFilamentLoaded) { unload_filament_withSensor(); } // unload filament first
-      set_positions(previous_extruder, active_extruder); // move idler and selector to new filament position
 
-      led_on(active_extruder,RED_LED);
-      load_filament_withSensor(); // load new filament
-      _return = true;
+  if (!isHomed) 
+  {
+    home();
+  }
+
+  set_positions(previous_extruder, active_extruder);
+
+  led_on(active_extruder,RED_LED);
+
+  if (!isFilamentLoaded)
+    {
+      load_filament_withSensor();
     }
 
   all_leds_off();
   led_on(active_extruder,GREEN_LED);
-  TRACE_LOG("End, result:");
-  TRACE_LOG(_return);
-  return _return;
+
+  TRACE_LOG("End");
 }
 
-//! @brief select extruder
+//! @brief Select filament
 //!
-//! Known limitation is, that if extruder 5 - service position was selected before
-//! it is not possible to select any other extruder than extruder 4.
+//! Does not unload or load filament, just moves selector and idler,
+//! caller is responsible for ensuring, that filament is not loaded when caled.
 //!
-//! @param new_extruder Extruder to be selected
-//! @return
-bool select_extruder(int new_extruder)
+//! @param new_extruder Filament to be selected
+void select_extruder(int new_extruder)
 {
   TRACE_LOG("Start, parameters:");
   TRACE_LOG(new_extruder);
 
-  bool _return = false;
-  if (!isHomed) { home(); }
+  if (!isHomed) 
+  {
+    home();
+  }
 
   led_on(active_extruder,GREEN_LED);
 
   int previous_extruder = active_extruder;
   active_extruder = new_extruder;
 
-  if (previous_extruder == active_extruder)
-    {
-      if (!isFilamentLoaded)
-        {
-          _return = true;
-        }
-    }
-  else
+  if (previous_extruder != active_extruder)
     {
       if (new_extruder == 5)
         {
           moveMotor(selectorMotor, 700);
+          ++previous_extruder;
         }
-      else
+      else if (previous_extruder == 5)
         {
-          if (previous_extruder == 5)
-            {
-              moveMotor(selectorMotor, -700);
-            }
-          else
-            {
-              if (isIdlerParked) park_idler(true);
-              set_positions(previous_extruder, active_extruder); // move idler and selector to new filament position
-              park_idler(false);
-            }
+          moveMotor(selectorMotor, -700);
+          previous_extruder = 4;
         }
-      _return = true;
+      
+      if (isIdlerParked) park_idler(true);
+      set_positions(previous_extruder, active_extruder); // move idler and selector to new filament position
+      park_idler(false);
     }
 
   all_leds_off();
   led_on(active_extruder,RED_LED);
-  TRACE_LOG("End, result:");
-  TRACE_LOG(_return);
-  return _return;
-}
-
-bool service_position()
-{
-  TRACE_LOG("Start");
-
-  moveMotor(selectorMotor, 600);
-
-  TRACE_LOG("End, result:");
-  TRACE_LOG("true");
-  return true;
+  TRACE_LOG("End");
 }
