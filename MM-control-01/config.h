@@ -8,14 +8,14 @@
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
 
 #define EMULATED_LEDS
-//#define SERIAL_BUTTONS
+#define SERIAL_BUTTONS
 
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
   #define DEBUG_MENU
 
-  //#define BTN_LOG
+  #define BTN_LOG
   //#define BTN_TRACE
   //#define MAIN_LOG
   //#define MAIN_TRACE
@@ -38,8 +38,8 @@
 // - MK8 drive gear: from spec: Effective diameter: 6.7mm; Effective circumference : 21mm
 // Steps for extrude 1 mm of filament:
 // steps = (steps per revolution) * (microstepping) / (effective circumference)
-// x = 200 * 16 / 21 ~= 152
-#define PULLEY_STEPS_MM 152
+// x = 200 * 16 / 21 ~= 152   -> after calibration ~ 138
+#define PULLEY_STEPS_MM 138
 
 // IDLER MOTOR
 // SETUP:
@@ -81,22 +81,23 @@
 #define selectorDirPin    55
 #define selectorStepPin   54
 #define selectorEnablePin 38
-#define selectorSpeed     2000
+#define selectorSpeed     1000
 const int selectorMotor[4] = { selectorDirPin, selectorStepPin, selectorEnablePin,  selectorSpeed };
 
 // Ramps Y-axis
 #define idlerDirPin       61
 #define idlerStepPin      60
 #define idlerEnablePin    56
-#define idlerSpeed        2000
+#define idlerSpeed        500
 const int idlerMotor[4] = { idlerDirPin, idlerStepPin, idlerEnablePin, idlerSpeed };
 
 // Ramps Z-axis
 #define pulleyDirPin      48
 #define pulleyStepPin     46
 #define pulleyEnablePin   62
-#define pulleySpeed       2000
+#define pulleySpeed       300
 const int pulleyMotor[4] = { pulleyDirPin, pulleyStepPin, pulleyEnablePin,  pulleySpeed };
+//const int pulleyMotor[4] = { selectorDirPin, selectorStepPin, selectorEnablePin, selectorSpeed };
 
 // ###### END - WOJCIECH KOPROWSKI CONF
 

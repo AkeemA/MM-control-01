@@ -203,20 +203,26 @@ void debugMenu()
 
           switch (_menu)
             {
+            case 4:
+              LOG("move selector for 18 mm");
+              //home_selector();
+              moveMotor(pulleyMotor, 18*getSelector_steps_for_mm(), 300);
+              break;
             case 3:
-              LOG("homing selector motor");
-              home_selector();
+              LOG("move selector for 14 mm");
+              moveMotor(pulleyMotor, 14*getSelector_steps_for_mm(), 300);
               break;
             case 2:
-              LOG("Homing idler motor");
-              home_idler(false);
+              LOG("move selector for -1 mm");
+              moveMotor(pulleyMotor, -1*getSelector_steps_for_mm(), 300);
               break;
             case 1:
-              LOG("Moving pulley motor for 20 mm");
-              moveMotor(pulleyMotor, 20*getPulley_steps_for_mm());
+              LOG("home selector");
+              home_selector();
               break;
             case 0: // exit menu
-              _exit = true;
+              LOG("move selector for -1 mm");
+              moveMotor(pulleyMotor, -1*getSelector_steps_for_mm(), 300);
               break;
             }
           break;
@@ -326,17 +332,17 @@ Btn buttonClicked()
 
   if (serialButton == 'r')
     {
-      LOG("right");
+      //LOG("right");
       return Btn::right;
     }
   if (serialButton == 'm')
     {
-      LOG("middle");
+      //LOG("middle");
       return Btn::middle;
     }
   if (serialButton == 'l')
     {
-      LOG("left");
+      //LOG("left");
       return Btn::left;
     }
 #else
@@ -358,7 +364,7 @@ Btn buttonClicked()
       return Btn::left;
     }
 #endif
-  LOG("none");
+  //LOG("none");
   return Btn::none;
 }
 

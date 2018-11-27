@@ -26,6 +26,15 @@ unsigned long int length_finda_extSens = 10000;
 unsigned long int length_extSens_BondTech = 1000;
 unsigned long int length_BondTech_extruder = 500;
 
+// --------------------------------------------------
+// |LH   O       O       O       O       O        RH|
+// |  -1 |   14  |   14  |   14  |   14  |    18    |
+// |  mm |   mm  |   mm  |   mm  |   mm  |    mm    |
+// --------------------------------------------------
+int selector_pos_distance = 14; // distance from every selector position (from 1 to 2, 2 to 3...) in mm
+int selector_1_from_rHome = 18; // distance from home position on right side to 1 position in mm
+int selector_5_from_lHome = -1; // distance from home position on left side to 5 position in mm
+
 unsigned long int getPulley_steps_for_mm()
 {
   TRACE_LOG("Called, result:");
@@ -74,3 +83,26 @@ unsigned long int getLength_BondTech_extruder()
   TRACE_LOG(length_BondTech_extruder);
   return length_BondTech_extruder;
 }
+
+int getSelector_pos_dis()
+{
+  TRACE_LOG("Called, result:");
+  TRACE_LOG(selector_pos_distance);
+  return selector_pos_distance;
+}
+
+
+int getSelector_dis_from_rH()
+{
+  TRACE_LOG("Called, result:");
+  TRACE_LOG(selector_1_from_rHome);
+  return selector_1_from_rHome;
+}
+
+int getSelector_dis_from_lH()
+{
+  TRACE_LOG("Called, result:");
+  TRACE_LOG(selector_5_from_lHome);
+  return selector_5_from_lHome;
+}
+

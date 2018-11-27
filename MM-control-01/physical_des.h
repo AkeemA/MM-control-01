@@ -14,4 +14,8 @@ unsigned long int getLength_finda_extSens();
 unsigned long int getLength_extSens_BondTech();
 unsigned long int getLength_BondTech_extruder();
 
+int getSelector_pos_dis();
+int getSelector_dis_from_rH();
+int getSelector_dis_from_lH();
+
 #endif //_PHYSICAL_H

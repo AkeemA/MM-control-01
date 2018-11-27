@@ -59,7 +59,7 @@ int getIdlerDistance(int _current_extruder, int _next_extruder)
 //! @return selector steps
 int getSelectorDistance(int _current_extruder, int _next_extruder)
 {
-    return (((_current_extruder - _next_extruder) * getSelector_steps_for_mm()) * -1);
+    return (((_current_extruder - _next_extruder) * getSelector_pos_dis() * getSelector_steps_for_mm()) * -1);
 }
 
 void set_positions(int _current_extruder, int _next_extruder)
@@ -512,11 +512,12 @@ bool home_selector()
   while (i < 76) // length of selector TODO: get it from physical description
   {
     if(dir == -1) dir = 1; else dir = -1;
-    moveMotor(selectorMotor, 1*getSelector_steps_for_mm());
+    //moveMotor(selectorMotor, 1*getSelector_steps_for_mm());
+    moveMotor(pulleyMotor, 1*getSelector_steps_for_mm());
     i += 4;
   }
 
-  moveMotor(selectorMotor, selector_steps_after_homing); // move to initial position
+  moveMotor(selectorMotor, getSelector_dis_from_rH()*getSelector_steps_for_mm()); // move to initial position
 
   TRACE_LOG("End, result:");
   TRACE_LOG(true);
