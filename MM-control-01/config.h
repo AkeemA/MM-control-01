@@ -7,10 +7,10 @@
 
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
 
-#define EMULATED_LEDS
+//#define EMULATED_LEDS
 #define SERIAL_BUTTONS
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
   #define DEBUG_MENU
@@ -81,7 +81,7 @@
 #define selectorDirPin    55
 #define selectorStepPin   54
 #define selectorEnablePin 38
-#define selectorSpeed     1000
+#define selectorSpeed     250
 const int selectorMotor[4] = { selectorDirPin, selectorStepPin, selectorEnablePin,  selectorSpeed };
 
 // Ramps Y-axis
@@ -97,7 +97,6 @@ const int idlerMotor[4] = { idlerDirPin, idlerStepPin, idlerEnablePin, idlerSpee
 #define pulleyEnablePin   62
 #define pulleySpeed       300
 const int pulleyMotor[4] = { pulleyDirPin, pulleyStepPin, pulleyEnablePin,  pulleySpeed };
-//const int pulleyMotor[4] = { selectorDirPin, selectorStepPin, selectorEnablePin, selectorSpeed };
 
 // ###### END - WOJCIECH KOPROWSKI CONF
 
