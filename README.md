@@ -1,73 +1,78 @@
 # MM-control-01 - port for Arduino Mega + Ramps
 MMU 3-axis stepper control
 
-## Table of contents
-
-<!--ts-->
-   * [Building](#building)
-     * [Cmake](#cmake)
-       * [Automatic, remote, using travis-ci](#automatic-remote-using-travis-ci)
-       * [Automatic, local, using script and prepared tools package](#automatic-local-using-script-and-prepared-tools-package)
-       * [Manually with installed tools](#manually-with-installed-tools)
-     * [Arduino](#arduino)
-     * [PlatformIO](#platformio)
-   * [Flashing](#flashing)
-   * [Building documentation](#building-documentation)
-     
-<!--te-->
-
-## Building
-### Cmake
-#### Automatic, remote, using travis-ci
-
-Create new github user, eg. your_user_name-your_repository_name-travis. This step is not mandatory, only recomended to limit access rights for travis to single repository. Grant this user access to your repository. Register this user on https://travis-ci.org/. Create API key for this user. In Github click on this user, settings, Developer settings, Personal access tokens, Generate new token, select public_repo, click on Generate token. Copy this token.
-Login into https://travis-ci.org/ enable build of your repository, click on repository setting, add environment variable ACCESS_TOKEN. As value paste your token.
-
-Each commit is build, but only for tagged commits MM-control-01.hex is attached to your release by travis.
-
-#### Automatic, local, using script and prepared tools package
-##### Linux
-
-You need unzip and wget tools.
-
-run ./build.sh
-
-It downloads neccessary tools, extracts it to ../MM-build-env-\<version\>, creates ../MM-control-01-build folder, configures build scripts in it and builds it using ninja.
-
-##### Windows
-
-Download MM-build-env-Win64-<version>.zip from https://github.com/prusa3d/MM-build-env/releases. Unpack it. Run configure.bat. This opens cmake-gui with preconfigured tools paths. Select path where is your source code located, select where you wish to build - out of source build is recomended. Click on generate, select generator - Ninja, or \<Your favourite IDE\> - Ninja.
+## BOM
+Components which I used:  
+NOTE: I had old Makerbot Replicator 1 clone, so I took the parts from it.  
   
-Run build.bat generated in your binary directory.
+- 3x - NEMA 17 motors  
+  I took them from Makerbot Replicator 1 clone  
+  Spec: 200 steps/rev  
+  Z motor with integrated lead screw -> New selector motor  
+  
+- 2x - 5x120mm smooth rods  
+  120mm long and 5mm in diameter for lead rods for selector. Replicator 1 had two long 5mm rods, I just cuted them to corect length.  
+  
+- 1x - 5x90mm smooth rod  
+  90mm long and 5mm in diameter for pulley rod. Replicator 1 had two long 5mm rods, I just cuted them to corect length.  
+  
+- 8x - 5x16mm smooth rods  
+  16mm long and 5mm in diameter for bearings rods and other joints. Replicator 1 had two long 5mm rods, I just cuted them to corect length.  
+  
+- 1x - lead screw nut  
+  You should get one lead screw nut with your NEMA 17 motor with integrated lead screw or just with lead screw. They need to fit each other.  
+  IMPORTANT: Remember that you will need to mod your selector printed part to fit your lead screw nut!  
+  
+- 9x - 625zz ball bearings  
+  Just bearings for MMU2 body, assembly as described in official Prusa MMU2 assembly instructions  
+  
+- 1x - P.I.N.D.A probe or similar  
+  You will need one for MMU2 selector. I had 12mm inductive sensor, so I modify my selector part to use it instead of P.I.N.D.A probe  
+  
+- 5x - MK8 hobbed gears  
+  To push filament  
+  
+- 1x - 5x5 Shaft coupler  
+  Needed to connect pulley motor with 5mm pulley rod (90mm long)  
+  
+- 1x - 12-15V, 2A Power supply  
+  To power electronics and motors  
+  
+- 1x - Arduino Mega 2560  
+  Regular Arduino Mega board  
+  
+- 1x - Ramps board  
+  Use whatever you have. I had Ramps 1.6 plus which is nice in terms of quality and power safety but is harder to convert it to support 24V (Could be handy to connect MMU2 directly to Einsy Board)
+  
+- 3x - Stepper drivers  
+  I am using A4988 but teoreticaly you can use whatever you want (need to support STEP, DIR, ENABLE signal).  
+  IMPORTANT: Remember that I configured the source code for A4988 and motors with 200 steps/rev. If you want to use something else, you will need to reconfigure it.  
+  
+- 1x - ~6mm metal ball  
+  To convert P.I.N.D.A probe to FINDA probe. ~6mm because I am using 12mm inductive sensor, so I modify my selector part to support it also to fit ball which I had (not sure the size could be 6mm or 7mm)  
+  
+- 1x - Microswitch with roller  
+  Will be used on MK3 extruder side as additional sensor attached to extruder cover.  
+  
+- 1x - 50mm 4 OD x 1.85 ID PTFE Tubing  
+  Almost impossible to get. I will try with "high quality" 4x1.90 PTFE tube... will see  
+  
+The rest:  
+- 1 or 2 meters of regular PTFE Tubes (4mm OD x 2mm ID)  
+- Prusa style squere M3 nuts  
+- M3 bolts, mostly 10mm long  
+- 2 springs and longer M3 screw (30mm long)  
+- 10 PC4-10 PTFE connectors  
+- cables to:  
+  connect motors  
+  connect Einsy with MMU (4 wire)  
+  connect external microswitch as second filament sensor (2 wire)  
 
-#### Manually with installed tools
-
-You need cmake, avr-gcc, avr-libc and cmake supported build system (e.g. ninja) installed.
-
-Out of source tree build is recommended, in case of Eclipse CDT project file generation is necceessary. If you don't want out of source tree build, you can skip this step.
-~~~
-cd ..
-mkdir MM-control-01_cmake
-cd MM-control-01_cmake
-~~~
-Generate build system - consult cmake --help for build systems generators and IDE project files supported on your platform.
-~~~
-cmake -G "build system generator" path_to_source
-~~~
-example 1 - build system only
-~~~
-cmake -G "Ninja" ../MM-control-01
-~~~
-example 2 - build system and project file for your IDE
-~~~
-cmake -G "Eclipse CDT4 - Ninja ../MM-control-01
-~~~
-Invoke build system you selected in previous step. Example:
-~~~
-ninja
-~~~
-file MM-control-01.hex is generated.
-
+Optional:  
+- 1x - 5x8 Shaft coupler  
+  If you have NEMA17 motor for selector without integrated lead screw, you will need this to connect them  
+  
+## Building
 ### Arduino
 Recomended version is arduino 1.8.5.  
 in MM-control-01 subfolder create file version.h  
@@ -81,67 +86,9 @@ or
 #define FW_LOCAL_CHANGES 1
 ~~~
 if you have uncommitted local changes.
-#### Adding MMUv2 board
-In Arduino IDE open File / Settings  
-Set Additional boards manager URL to:  
-https://raw.githubusercontent.com/prusa3d/Arduino_Boards/master/IDE_Board_Manager/package_prusa3d_index.json  
-Open Tools / Board: / Boards manager...
-Install Prusa Research AVR Boards by Prusa Research  
-which contains only one board:  
-Original Prusa i3 MK3 Multi Material 2.0
-
-Select board Original Prusa i3 MK3 Multi Material 2.0
-
-Bootloader binary is shipped with the board, source is located at https://github.com/prusa3d/caterina
 #### Build
 click verify to build
-### PlatformIO
-PlatformIO build is not supported by Prusa Research, please report any PlatformIO related issues at https://github.com/awigen/MM-control-01/issues
 
 ## Flashing
-### Windows
 #### Arduino
 click Upload
-#### Slic3er
-Hex file needs to be edited to be recognized as for MMUv2 in case of Arduino build. This is done automatically in cmake build.
-
-Add following line to the begining of MM-control-01.hex:
-~~~
-; device = mm-control
-~~~
-#### Avrdude
-Board needs to be reset to bootloader. Bootloader has 5 seconds timeout and then returns to the application.
-
-This can be accomplished manually by clicking reset button on MMU, or programmatically by opening and closing its virtual serial line at baudrate 1500.
-
-Than flash it using following command, replace \<virtual serial port\> with CDC device created by MMU usually com\<nr.\> under Windows and /dev/ttyACM\<nr.\> under Linux. -b baud rate is don't care value, probably doesn't have to be specified at all, as there is no physical uart.
-~~~
-avrdude -v -p atmega32u4 -c avr109 -P <virtual serial port> -b 57600 -D -U flash:w:MM-control-01.ino.hex:i
-~~~
-
-### Linux
-Same as Windows, but there is known issue with ModemManager:
-
-If you have the modemmanager installed, you either need to deinstall it, or blacklist the Prusa Research USB devices:
-
-~~~
-/etc/udev/rules.d/99-mm.rules
-
-# Original Prusa i3 MK3 Multi Material 2.0 upgrade
-ATTRS{idVendor}=="2c99", ATTRS{idProduct}=="0003", ENV{ID_MM_DEVICE_IGNORE}="1"
-ATTRS{idVendor}=="2c99", ATTRS{idProduct}=="0004", ENV{ID_MM_DEVICE_IGNORE}="1"
-
-$ sudo udevadm control --reload-rules
-~~~
-A request has been sent to Ubuntu, Debian and ModemManager to blacklist the whole Prusa Research VID space.
-
-https://bugs.launchpad.net/ubuntu/+source/modemmanager/+bug/1781975
-
-https://bugs.debian.org/cgi-bin/pkgreport.cgi?dist=unstable;package=modemmanager
-
-and reported to
-https://lists.freedesktop.org/archives/modemmanager-devel/2018-July/006471.html
-
-## Building documentation
-Run doxygen in MM-control-01 folder.
-Documentation is generated in Doc subfolder.
