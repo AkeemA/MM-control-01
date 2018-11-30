@@ -4,11 +4,14 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-
 // ###### BEGIN - WOJCIECH KOPROWSKI CONF:
 
 //#define EMULATED_LEDS
 #define SERIAL_BUTTONS
+#define EMULATED_RESET
+#ifdef EMULATED_RESET
+  #define SOFTWARE_RESET_PIN 15 // Y-MAX pind D15
+#endif
 
 //#define DEBUG
 
@@ -66,8 +69,8 @@
 // ------- BOARD EDGE ---------
 //
 // In AUX-1 you can connect 2 sensors even if they are "Digital" or "Analog"
-#define findaPin 3 // Ramps AUX-1 pin A3
-#define extruderSensorPin 4 // Ramps AUX-1 pin A4
+#define findaPin 57 // Ramps AUX-1 pin A3
+#define extruderSensorPin 58 // Ramps AUX-1 pin A4
 
 // Uncoment to use unstock finda sensor (in my case 12mm inductive sensor).
 //#define UNSTOCK_FINDA

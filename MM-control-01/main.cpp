@@ -178,6 +178,36 @@ void manual_extruder_selector()
   TRACE_LOG("End");
 }
 
+
+//! @brief Software reset part
+//!
+//! I added this function because stock MK3 is connecting 4 cables from Einsy board to MMU board: TX RX GND RESET 
+//! but unfortunately, my setup (Arduino Mega + Ramps 1.6 plus) doesn't have empty reset pin connector. 
+//! I decided to connect Einsy reset pin to Y-max endstop pin and if this pin will be triggered, I will perform software reset
+//!
+#ifdef EMULATED_RESET
+void softReset_conf()
+{
+  pinMode(SOFTWARE_RESET_PIN, INPUT);
+}
+
+bool resetTriggered()
+{
+  TRACE_LOG("Called, result:");
+
+  int buttonState = digitalRead(SOFTWARE_RESET_PIN);
+
+  if (buttonState == HIGH) return true;
+  else                     return false;
+}
+#endif
+
+void softwareReset()
+{
+  wdt_enable(WDTO_15MS);
+}
+
+
 //! @brief main loop
 //!
 //! It is possible to manually select filament and feed it when not printing.
@@ -187,16 +217,13 @@ void manual_extruder_selector()
 //! middle | feed filament
 //!
 //! @copydoc manual_extruder_selector()
-
-int i = 0;
 void loop()
 {
   TRACE_LOG("Start");
-  if(i==0) LCD_print(0,0,"|");
-  if(i==1) LCD_print(0,0,"/");
-  if(i==2) LCD_print(0,0,"-");
-  if(i==3) LCD_print(0,0,"\\");
-  if(i<3) i++; else i=0;
+
+#ifdef EMULATED_RESET
+  if(resetTriggered()) softwareReset();
+#endif
 
   process_commands(uart_com);
 
@@ -294,7 +321,7 @@ void process_commands(FILE* inout)
       else if (sscanf_P(line, PSTR("X%d"), &value) > 0)
         {
           if (value == 0) // MMU reset
-            wdt_enable(WDTO_15MS);
+            softwareReset();
         }
       else if (sscanf_P(line, PSTR("P%d"), &value) > 0)
         {
