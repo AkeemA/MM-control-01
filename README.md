@@ -72,7 +72,7 @@ Optional:
 - 1x - 5x8 Shaft coupler  
   If you have NEMA17 motor for selector without integrated lead screw, you will need this to connect them  
   
-## Building
+## Compiling the software
 ### Arduino
 Recomended version is arduino 1.8.5.  
 in MM-control-01 subfolder create file version.h  
@@ -92,3 +92,12 @@ click verify to build
 ## Flashing
 #### Arduino
 click Upload
+
+## Parts to print
+To do...
+
+## Configure (config.h)
+To do...
+
+## Additional steps during assembly
+To do...
